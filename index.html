@@ -5,83 +5,72 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Framer — PFP Cropper</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alan+Sans:wght@400..800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --void:#0d0e10;
-    --surface:#17181c;
-    --surface-raised:#1f2024;
-    --line:#2b2d32;
-    --line-soft:#232428;
-    --text:#f2f1ec;
-    --text-muted:#93959c;
-    --text-faint:#5c5e64;
-    --signal:#ff5c35;
-    --signal-dim:#ff5c3522;
-    --mint:#3ddc97;
-    --radius:14px;
+    --bg:#000000;
+    --surface:#1c1c1e;
+    --surface-2:#2c2c2e;
+    --surface-3:#3a3a3c;
+    --sep: rgba(255,255,255,0.11);
+    --text:#f5f5f7;
+    --text-2:#98989d;
+    --text-3:#636366;
+    --accent:#0a84ff;
+    --accent-dim: rgba(10,132,255,0.16);
+    --radius-lg:18px;
+    --radius-md:12px;
   }
-  *{box-sizing:border-box;}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;}
   body{
-    background:var(--void);
+    background:var(--bg);
     color:var(--text);
-    font-family:'Inter',system-ui,sans-serif;
+    font-family:'Alan Sans', system-ui, -apple-system, sans-serif;
+    font-feature-settings:'tnum' 1;
     min-height:100dvh;
-    -webkit-tap-highlight-color:transparent;
     overflow-x:hidden;
   }
   .app{
-    max-width:1120px;
+    max-width:1080px;
     margin:0 auto;
-    padding:20px 20px 100px;
+    padding:22px 18px 110px;
     min-height:100dvh;
   }
 
   /* ---------- Header ---------- */
   header{
     display:flex;
-    align-items:baseline;
+    align-items:center;
     justify-content:space-between;
-    gap:16px;
-    padding:6px 2px 26px;
-    border-bottom:1px solid var(--line-soft);
-    margin-bottom:28px;
-  }
-  .brand{display:flex; align-items:baseline; gap:10px;}
-  .brand .mark{
-    width:11px;height:11px;border-radius:50%;
-    background:var(--signal);
-    box-shadow:0 0 0 3px var(--signal-dim);
-    flex:none;
-    transform:translateY(-1px);
+    gap:12px;
+    padding:2px 2px 22px;
+    margin-bottom:20px;
   }
   h1{
-    font-family:'Space Grotesk',sans-serif;
     font-size:20px;
-    font-weight:600;
+    font-weight:700;
     letter-spacing:-0.01em;
     margin:0;
   }
   header p{
     margin:0;
-    color:var(--text-faint);
-    font-family:'JetBrains Mono',monospace;
-    font-size:11px;
-    letter-spacing:.02em;
-    text-transform:uppercase;
+    color:var(--text-3);
+    font-size:13px;
+    font-weight:500;
   }
 
   /* ---------- Workspace layout ---------- */
   .workspace{
     display:grid;
     grid-template-columns:minmax(0,1fr) 320px;
-    gap:28px;
+    gap:24px;
     align-items:start;
   }
   @media (max-width:860px){
     .workspace{grid-template-columns:1fr;}
-    .app{padding:16px 14px 110px;}
+    .app{padding:18px 14px 120px;}
   }
 
   /* ---------- Stage panel ---------- */
@@ -89,41 +78,34 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:14px;
+    gap:16px;
   }
+
+  /* True-square container: padding-top 100% is bulletproof across browsers,
+     unlike aspect-ratio which can misbehave inside grid/flex tracks. */
   .stage-frame{
     position:relative;
     width:100%;
-    max-width:420px;
-    aspect-ratio:1/1;
-    padding:22px;
+    max-width:400px;
+    padding-top:100%;
+    height:0;
   }
-  .bracket{
+  .stage-frame-inner{
     position:absolute;
-    width:20px;height:20px;
-    border:2px solid var(--text-faint);
-    opacity:.7;
+    inset:0;
   }
-  .bracket.tl{top:0;left:0;border-right:none;border-bottom:none;border-top-left-radius:4px;}
-  .bracket.tr{top:0;right:0;border-left:none;border-bottom:none;border-top-right-radius:4px;}
-  .bracket.bl{bottom:0;left:0;border-right:none;border-top:none;border-bottom-left-radius:4px;}
-  .bracket.br{bottom:0;right:0;border-left:none;border-top:none;border-bottom-right-radius:4px;}
 
   .stage{
     position:relative;
     width:100%;
     height:100%;
-    border-radius:10px;
-    background:
-      linear-gradient(45deg,#1b1c20 25%,transparent 25%) 0 0/22px 22px,
-      linear-gradient(-45deg,#1b1c20 25%,transparent 25%) 0 0/22px 22px,
-      linear-gradient(45deg,transparent 75%,#1b1c20 75%) 0 0/22px 22px,
-      linear-gradient(-45deg,transparent 75%,#1b1c20 75%) 0 0/22px 22px,
-      #131417;
+    border-radius:26px;
+    background:var(--surface);
     overflow:hidden;
     touch-action:none;
     cursor:grab;
     user-select:none;
+    box-shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 20px 40px -20px rgba(0,0,0,.6);
   }
   .stage.dragging{cursor:grabbing;}
   .stage img{
@@ -133,13 +115,15 @@
     max-height:none;
     pointer-events:none;
     display:block;
+    transform-origin:0 0;
+    will-change:transform;
   }
   .crop-mask{
     position:absolute;
     top:50%;left:50%;
     transform:translate(-50%,-50%);
     border-radius:50%;
-    box-shadow:0 0 0 2000px rgba(9,10,12,.74);
+    box-shadow:0 0 0 2000px rgba(0,0,0,.66);
     pointer-events:none;
   }
   .ring-preview{
@@ -162,154 +146,150 @@
     cursor:pointer;
   }
   .placeholder .icon{
-    width:44px;height:44px;
+    width:48px;height:48px;
     border-radius:50%;
-    border:1.5px dashed var(--text-faint);
+    background:var(--surface-2);
     display:flex;align-items:center;justify-content:center;
-    color:var(--text-muted);
+    color:var(--text-2);
     font-size:20px;
+    font-weight:600;
   }
-  .placeholder strong{font-size:14px;font-weight:500;color:var(--text);}
-  .placeholder span{font-size:12px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;}
+  .placeholder strong{font-size:15px;font-weight:600;color:var(--text);}
+  .placeholder span{font-size:12.5px;color:var(--text-3); font-weight:500;}
 
   .hud{
-    display:flex;
-    gap:18px;
-    font-family:'JetBrains Mono',monospace;
-    font-size:11px;
-    color:var(--text-faint);
-    letter-spacing:.02em;
+    font-size:13px;
+    font-weight:600;
+    color:var(--text-2);
+    letter-spacing:-0.01em;
   }
-  .hud b{color:var(--text-muted); font-weight:500;}
 
   .stage-actions{
     display:flex;
-    gap:10px;
+    gap:6px;
     width:100%;
-    max-width:420px;
+    max-width:400px;
   }
 
   /* ---------- Buttons ---------- */
   button{
-    font-family:'Inter',sans-serif;
+    font-family:'Alan Sans', sans-serif;
     border:none;
     cursor:pointer;
     color:var(--text);
+    background:none;
   }
-  .btn{
-    background:var(--surface-raised);
-    border:1px solid var(--line);
-    border-radius:9px;
-    padding:10px 14px;
-    font-size:13px;
-    font-weight:500;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:6px;
+  .text-btn{
     flex:1;
-    transition:border-color .15s ease, background .15s ease;
+    color:var(--accent);
+    font-size:14.5px;
+    font-weight:600;
+    padding:10px;
+    border-radius:10px;
+    transition:background .15s ease, opacity .15s ease;
   }
-  .btn:hover{border-color:#3a3c42;}
-  .btn:active{transform:scale(.98);}
-  .btn.ghost{background:transparent;}
+  .text-btn:active{background:var(--accent-dim);}
   input[type=file]{display:none;}
 
   /* ---------- Controls panel ---------- */
   .controls{
     display:flex;
     flex-direction:column;
-    gap:16px;
+    gap:20px;
   }
   .group{
     background:var(--surface);
-    border:1px solid var(--line-soft);
-    border-radius:var(--radius);
-    padding:16px;
+    border-radius:var(--radius-lg);
+    overflow:hidden;
   }
-  .group h2{
-    font-family:'JetBrains Mono',monospace;
-    font-size:10px;
-    letter-spacing:.08em;
+  .group-title{
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.02em;
     text-transform:uppercase;
-    color:var(--text-faint);
-    margin:0 0 14px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
+    color:var(--text-3);
+    margin:0 0 8px 14px;
   }
   .row{
     display:flex;
     align-items:center;
     justify-content:space-between;
-    gap:12px;
-    margin-bottom:12px;
+    gap:14px;
+    padding:13px 14px;
+    border-bottom:1px solid var(--sep);
+    min-height:24px;
   }
-  .row:last-child{margin-bottom:0;}
-  .row label{font-size:13px; color:var(--text-muted); flex:none;}
+  .row:last-child{border-bottom:none;}
+  .row label{font-size:15px; color:var(--text); flex:none; font-weight:500;}
+  .row .sub{font-size:12.5px; color:var(--text-3); font-weight:500; margin-top:1px;}
   .row .value{
-    font-family:'JetBrains Mono',monospace;
-    font-size:11px;
-    color:var(--text-faint);
-    min-width:34px;
+    font-size:14px;
+    font-weight:600;
+    color:var(--text-2);
+    min-width:30px;
     text-align:right;
+    font-variant-numeric:tabular-nums;
   }
 
   input[type=range]{
     -webkit-appearance:none;
     appearance:none;
     flex:1;
-    height:3px;
-    background:var(--line);
+    height:4px;
+    background:var(--surface-3);
     border-radius:2px;
     outline:none;
   }
   input[type=range]::-webkit-slider-thumb{
     -webkit-appearance:none;
-    width:16px;height:16px;
+    width:22px;height:22px;
     border-radius:50%;
-    background:var(--signal);
-    border:2px solid #0d0e10;
+    background:#ffffff;
+    box-shadow:0 1px 4px rgba(0,0,0,.4);
     cursor:pointer;
     margin-top:0;
   }
   input[type=range]::-moz-range-thumb{
-    width:14px;height:14px;
+    width:20px;height:20px;
     border-radius:50%;
-    background:var(--signal);
-    border:2px solid #0d0e10;
+    background:#ffffff;
+    border:none;
+    box-shadow:0 1px 4px rgba(0,0,0,.4);
     cursor:pointer;
   }
+  input[type=range]::-webkit-slider-runnable-track{
+    height:4px; border-radius:2px;
+  }
 
-  .slider-row{display:flex; align-items:center; gap:10px;}
-  .slider-row input[type=range]{flex:1;}
+  .slider-row{display:flex; align-items:center; gap:12px; flex:1;}
 
   /* toggle switch */
   .switch{
     position:relative;
-    width:38px;height:22px;
-    background:var(--line);
+    width:44px;height:26px;
+    background:var(--surface-3);
     border-radius:20px;
     cursor:pointer;
-    transition:background .15s ease;
+    transition:background .18s ease;
     flex:none;
   }
-  .switch.on{background:var(--signal);}
+  .switch.on{background:var(--accent);}
   .switch::after{
     content:'';
     position:absolute;
     top:2px;left:2px;
-    width:18px;height:18px;
+    width:22px;height:22px;
     background:#fff;
     border-radius:50%;
-    transition:transform .15s ease;
+    box-shadow:0 1px 3px rgba(0,0,0,.3);
+    transition:transform .18s ease;
   }
-  .switch.on::after{transform:translateX(16px);}
+  .switch.on::after{transform:translateX(18px);}
 
   .swatch{
-    width:26px;height:26px;
+    width:28px;height:28px;
     border-radius:50%;
-    border:1px solid var(--line);
+    border:1px solid var(--sep);
     padding:0;
     overflow:hidden;
     position:relative;
@@ -318,78 +298,70 @@
   .swatch input[type=color]{
     position:absolute;
     top:-4px;left:-4px;
-    width:38px;height:38px;
+    width:40px;height:40px;
     border:none;
     padding:0;
     cursor:pointer;
+    background:none;
   }
 
   select{
-    background:var(--surface-raised);
+    background:var(--surface-2);
     color:var(--text);
-    border:1px solid var(--line);
-    border-radius:7px;
-    padding:6px 8px;
-    font-size:12px;
-    font-family:'Inter',sans-serif;
+    border:none;
+    border-radius:8px;
+    padding:7px 10px;
+    font-size:14px;
+    font-family:'Alan Sans',sans-serif;
+    font-weight:500;
   }
 
   .segmented{
     display:flex;
-    background:var(--surface-raised);
-    border:1px solid var(--line);
-    border-radius:8px;
+    background:var(--surface-2);
+    border-radius:9px;
     padding:2px;
     gap:2px;
+    flex:1;
+    max-width:220px;
   }
   .segmented button{
     flex:1;
     background:transparent;
-    border-radius:6px;
+    border-radius:7px;
     padding:7px 4px;
-    font-size:12px;
-    font-family:'JetBrains Mono',monospace;
-    color:var(--text-faint);
+    font-size:13px;
+    font-weight:600;
+    color:var(--text-2);
+    transition:background .15s ease, color .15s ease;
   }
   .segmented button.active{
-    background:var(--signal);
-    color:#100b08;
-    font-weight:500;
+    background:var(--surface-3);
+    color:var(--text);
   }
-
-  .bg-row{display:flex; gap:8px;}
-  .bg-opt{
-    flex:1;
-    padding:8px 6px;
-    border-radius:7px;
-    border:1px solid var(--line);
-    background:var(--surface-raised);
-    font-size:11px;
-    color:var(--text-faint);
-    text-align:center;
-  }
-  .bg-opt.active{border-color:var(--signal); color:var(--text); background:#241a15;}
 
   /* ---------- Result preview ---------- */
-  .result{
+  .result-row{
     display:flex;
     align-items:center;
     gap:14px;
+    padding:14px;
   }
   .result-canvas-wrap{
-    width:64px;height:64px;
+    width:56px;height:56px;
     border-radius:50%;
     flex:none;
     background:
-      linear-gradient(45deg,#26272c 25%,transparent 25%) 0 0/10px 10px,
-      linear-gradient(-45deg,#26272c 25%,transparent 25%) 0 0/10px 10px,
-      linear-gradient(45deg,transparent 75%,#26272c 75%) 0 0/10px 10px,
-      linear-gradient(-45deg,transparent 75%,#26272c 75%) 0 0/10px 10px,
-      #17181c;
+      linear-gradient(45deg,#2a2a2c 25%,transparent 25%) 0 0/10px 10px,
+      linear-gradient(-45deg,#2a2a2c 25%,transparent 25%) 0 0/10px 10px,
+      linear-gradient(45deg,transparent 75%,#2a2a2c 75%) 0 0/10px 10px,
+      linear-gradient(-45deg,transparent 75%,#2a2a2c 75%) 0 0/10px 10px,
+      #1c1c1e;
     overflow:hidden;
   }
   .result-canvas-wrap canvas{width:100%;height:100%;display:block;}
-  .result-text{font-size:11.5px; color:var(--text-faint); line-height:1.5; font-family:'JetBrains Mono',monospace;}
+  .result-text{font-size:13px; color:var(--text-3); line-height:1.45; font-weight:500;}
+  .result-text b{color:var(--text-2); font-weight:600;}
 
   /* ---------- Export bar ---------- */
   .export-bar{
@@ -398,43 +370,41 @@
     display:flex;
     justify-content:center;
     padding:14px 16px calc(14px + env(safe-area-inset-bottom));
-    background:linear-gradient(to top, var(--void) 60%, transparent);
+    background:linear-gradient(to top, var(--bg) 55%, transparent);
     z-index:20;
     pointer-events:none;
   }
   .export-bar .inner{
     width:100%;
-    max-width:520px;
-    display:flex;
-    gap:10px;
+    max-width:480px;
     pointer-events:auto;
   }
   .save-btn{
-    flex:1;
-    background:var(--signal);
-    color:#140d09;
-    border-radius:12px;
-    padding:14px 18px;
-    font-size:14.5px;
-    font-weight:600;
+    width:100%;
+    background:var(--accent);
+    color:#ffffff;
+    border-radius:14px;
+    padding:15px 18px;
+    font-size:15.5px;
+    font-weight:700;
     display:flex;
     align-items:center;
     justify-content:center;
-    gap:8px;
-    box-shadow:0 8px 24px -6px rgba(255,92,53,.45);
+    letter-spacing:-0.01em;
+    transition:opacity .12s ease, transform .12s ease;
   }
-  .save-btn:active{transform:scale(.985);}
+  .save-btn:active{opacity:.85; transform:scale(.985);}
   .toast{
     position:fixed;
     left:50%;
-    bottom:88px;
+    bottom:92px;
     transform:translateX(-50%) translateY(8px);
-    background:var(--surface-raised);
-    border:1px solid var(--line);
+    background:var(--surface-2);
     color:var(--text);
-    padding:9px 16px;
-    border-radius:20px;
-    font-size:12.5px;
+    padding:10px 18px;
+    border-radius:22px;
+    font-size:13px;
+    font-weight:500;
     opacity:0;
     transition:opacity .2s ease, transform .2s ease;
     z-index:30;
@@ -443,17 +413,14 @@
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
-  ::selection{background:var(--signal); color:#100b08;}
+  ::selection{background:var(--accent); color:#fff;}
 </style>
 </head>
 <body>
 
 <div class="app">
   <header>
-    <div class="brand">
-      <div class="mark"></div>
-      <h1>Framer</h1>
-    </div>
+    <h1>Framer</h1>
     <p>Logo → profile picture</p>
   </header>
 
@@ -461,29 +428,23 @@
     <!-- STAGE -->
     <section class="stage-panel">
       <div class="stage-frame">
-        <div class="bracket tl"></div>
-        <div class="bracket tr"></div>
-        <div class="bracket bl"></div>
-        <div class="bracket br"></div>
-        <div class="stage" id="stage">
-          <img id="dragImg" alt="" draggable="false">
-          <div class="crop-mask" id="cropMask"></div>
-          <div class="ring-preview" id="ringPreview"></div>
-          <div class="placeholder" id="placeholder">
-            <div class="icon">↑</div>
-            <strong>Drop a logo here</strong>
-            <span>or tap to upload · PNG / JPG / SVG</span>
+        <div class="stage-frame-inner">
+          <div class="stage" id="stage">
+            <img id="dragImg" alt="" draggable="false">
+            <div class="crop-mask" id="cropMask"></div>
+            <div class="ring-preview" id="ringPreview"></div>
+            <div class="placeholder" id="placeholder">
+              <div class="icon">＋</div>
+              <strong>Add a logo</strong>
+              <span>Tap to upload, or drag a file here</span>
+            </div>
           </div>
         </div>
       </div>
-      <div class="hud">
-        <span>ZOOM <b id="hudZoom">100%</b></span>
-        <span>OUT <b id="hudSize">1024×1024</b></span>
-        <span>FMT <b>PNG · ALPHA</b></span>
-      </div>
+      <div class="hud"><span id="hudZoom">100%</span> · <span id="hudSize">1024 × 1024</span></div>
       <div class="stage-actions">
-        <button class="btn ghost" id="replaceBtn">Replace image</button>
-        <button class="btn ghost" id="centerBtn">Recenter</button>
+        <button class="text-btn" id="replaceBtn">Replace</button>
+        <button class="text-btn" id="centerBtn">Recenter</button>
       </div>
       <input type="file" id="fileInput" accept="image/*">
     </section>
@@ -492,19 +453,19 @@
     <aside class="controls">
 
       <div class="group">
-        <h2>Position &amp; Zoom</h2>
-        <div class="slider-row">
-          <span style="font-size:12px;color:var(--text-faint);">−</span>
-          <input type="range" id="zoomSlider" min="100" max="400" value="100" step="1">
-          <span style="font-size:12px;color:var(--text-faint);">+</span>
+        <div class="row">
+          <label>Zoom</label>
+          <div class="slider-row">
+            <input type="range" id="zoomSlider" min="100" max="400" value="100" step="1">
+          </div>
         </div>
       </div>
 
       <div class="group">
-        <h2>
-          Border
-          <div class="switch" id="borderSwitch"></div>
-        </h2>
+        <div class="row">
+          <label>Border</label>
+          <div class="switch on" id="borderSwitch"></div>
+        </div>
         <div class="row">
           <label>Style</label>
           <select id="borderStyle">
@@ -516,52 +477,58 @@
         </div>
         <div class="row">
           <label>Thickness</label>
-          <div class="slider-row" style="flex:1; margin-left:10px;">
+          <div class="slider-row">
             <input type="range" id="borderWidth" min="0" max="60" value="24">
             <span class="value" id="borderWidthVal">24</span>
           </div>
         </div>
         <div class="row">
           <label>Padding</label>
-          <div class="slider-row" style="flex:1; margin-left:10px;">
+          <div class="slider-row">
             <input type="range" id="borderGap" min="0" max="50" value="8">
             <span class="value" id="borderGapVal">8</span>
           </div>
         </div>
         <div class="row">
           <label>Color</label>
-          <div class="swatch" id="borderSwatch" style="background:#ff5c35;">
-            <input type="color" id="borderColor" value="#ff5c35">
+          <div class="swatch" id="borderSwatch" style="background:#ffffff;">
+            <input type="color" id="borderColor" value="#ffffff">
           </div>
         </div>
       </div>
 
       <div class="group">
-        <h2>Background</h2>
-        <div class="bg-row">
-          <div class="bg-opt active" id="bgTransparent">Transparent</div>
-          <div class="bg-opt" id="bgSolid">Solid color</div>
+        <div class="row">
+          <label>Background</label>
+          <div class="segmented" id="bgSeg">
+            <button data-mode="transparent" class="active">Clear</button>
+            <button data-mode="solid">Fill</button>
+          </div>
         </div>
-        <div class="row" id="bgColorRow" style="margin-top:12px; display:none;">
-          <label>Fill</label>
-          <div class="swatch" id="bgSwatch" style="background:#141417;">
-            <input type="color" id="bgColor" value="#141417">
+        <div class="row" id="bgColorRow" style="display:none;">
+          <label>Color</label>
+          <div class="swatch" id="bgSwatch" style="background:#1c1c1e;">
+            <input type="color" id="bgColor" value="#1c1c1e">
           </div>
         </div>
       </div>
 
       <div class="group">
-        <h2>Output size</h2>
-        <div class="segmented" id="sizeSeg">
-          <button data-size="512">512</button>
-          <button data-size="1024" class="active">1024</button>
-          <button data-size="2048">2048</button>
+        <div class="row">
+          <label>Size</label>
+          <div class="segmented" id="sizeSeg">
+            <button data-size="512">512</button>
+            <button data-size="1024" class="active">1024</button>
+            <button data-size="2048">2048</button>
+          </div>
         </div>
       </div>
 
-      <div class="group result">
-        <div class="result-canvas-wrap"><canvas id="resultCanvas"></canvas></div>
-        <div class="result-text">Live result<br>transparent outside the ring<br>updates as you edit</div>
+      <div class="group">
+        <div class="result-row">
+          <div class="result-canvas-wrap"><canvas id="resultCanvas"></canvas></div>
+          <div class="result-text">Live result — <b>matches your export exactly</b>, transparent outside the ring.</div>
+        </div>
       </div>
 
     </aside>
@@ -582,18 +549,18 @@
   // ---- state ----
   let img = null;
   let naturalW = 0, naturalH = 0;
-  let baseScale = 0;      // cover-fit scale at userScale=1, in unit space
-  let userScale = 1;      // 1..4
-  let dispW = 0, dispH = 0; // displayed size in unit space
-  let offX = 0, offY = 0; // top-left offset in unit space
+  let baseScale = 0;
+  let userScale = 1;
+  let dispW = 0, dispH = 0;
+  let offX = 0, offY = 0;
 
   let borderEnabled = true;
   let borderStyle = 'solid';
-  let borderWidthRef = 24;  // px per 1000 units
+  let borderWidthRef = 24;
   let borderGapRef = 8;
-  let borderColor = '#ff5c35';
-  let bgMode = 'transparent'; // 'transparent' | 'solid'
-  let bgColor = '#141417';
+  let borderColor = '#ffffff';
+  let bgMode = 'transparent';
+  let bgColor = '#1c1c1e';
   let outputSize = 1024;
 
   // ---- elements ----
@@ -614,6 +581,12 @@
     toast.classList.add('show');
     clearTimeout(showToast._t);
     showToast._t = setTimeout(()=>toast.classList.remove('show'), 2600);
+  }
+
+  // ---------------- Rect cache (avoids layout thrash during drag) ----------------
+  let cachedRect = null;
+  function currentRect(){
+    return cachedRect || stage.getBoundingClientRect();
   }
 
   // ---------------- Image loading ----------------
@@ -651,8 +624,10 @@
   function layoutImage(){
     dragImg.style.width = (dispW/10) + '%';
     dragImg.style.height = (dispH/10) + '%';
-    dragImg.style.left = (offX/10) + '%';
-    dragImg.style.top = (offY/10) + '%';
+    const rect = currentRect();
+    const px = offX/UNIT*rect.width;
+    const py = offY/UNIT*rect.height;
+    dragImg.style.transform = `translate3d(${px}px, ${py}px, 0)`;
   }
 
   function clampOffsets(){
@@ -668,7 +643,6 @@
     userScale = newScale;
     dispW = naturalW * baseScale * userScale;
     dispH = naturalH * baseScale * userScale;
-    // keep the same relative point under the anchor fixed
     const ax = anchorRatioX === undefined ? 0.5 : anchorRatioX;
     const ay = anchorRatioY === undefined ? 0.5 : anchorRatioY;
     offX -= (dispW - oldDispW) * ax;
@@ -679,12 +653,21 @@
     hudZoom.textContent = Math.round(userScale*100) + '%';
   }
 
+  function withSnap(fn){
+    dragImg.style.transition = 'transform .32s cubic-bezier(.22,1,.36,1)';
+    fn();
+    setTimeout(()=>{ dragImg.style.transition = 'none'; }, 340);
+  }
+
   // ---------------- Overlay geometry (mask + ring) ----------------
-  function geometry(sizeUnit){
-    // sizeUnit = UNIT (1000). Returns radii in unit space.
-    const strokeW = borderEnabled ? borderWidthRef : 0;
-    const gapW = borderGapRef;
-    const outerR = sizeUnit/2 - strokeW/2;
+  // size is expressed in the SAME units as the space it's drawn into,
+  // scaleF converts the borderWidthRef/borderGapRef "per-1000" values
+  // into that space so the on-screen ring and the exported ring always match.
+  function geometry(size){
+    const scaleF = size / UNIT;
+    const strokeW = borderEnabled ? borderWidthRef * scaleF : 0;
+    const gapW = borderGapRef * scaleF;
+    const outerR = size/2 - strokeW/2;
     const contentR = Math.max(0, outerR - strokeW/2 - gapW);
     return {strokeW, outerR, contentR};
   }
@@ -697,7 +680,7 @@
 
     if(borderEnabled && strokeW > 0){
       ringPreview.style.display = 'block';
-      const rectW = stage.getBoundingClientRect().width || 340;
+      const rectW = currentRect().width || stage.getBoundingClientRect().width || 340;
       const strokePx = Math.max(1, (strokeW/UNIT) * rectW);
       const od = (outerR*2/UNIT*100);
       ringPreview.style.width = od + '%';
@@ -710,7 +693,7 @@
     }
   }
 
-  // ---------------- Canvas render (used for live result + export) ----------------
+  // ---------------- Canvas render (used for live result + export — same code path) ----------------
   function renderToCanvas(canvas, size){
     canvas.width = size;
     canvas.height = size;
@@ -765,18 +748,21 @@
   }
 
   function renderResult(){
-    renderToCanvas(resultCanvas, 200);
+    renderToCanvas(resultCanvas, 240);
   }
 
-  // ---------------- Pointer drag ----------------
+  // ---------------- Pointer drag (transform-based + rAF throttled for smoothness) ----------------
   let dragging = false;
   let dragStartX=0, dragStartY=0, startOffX=0, startOffY=0;
   const activePointers = new Map();
   let pinchStartDist = 0, pinchStartScale = 1;
+  let moveScheduled = false;
 
   stage.addEventListener('pointerdown', e=>{
     if(!img) return;
+    dragImg.style.transition = 'none';
     stage.setPointerCapture(e.pointerId);
+    cachedRect = stage.getBoundingClientRect();
     activePointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
     if(activePointers.size === 1){
       dragging = true;
@@ -791,27 +777,39 @@
     }
   });
 
-  stage.addEventListener('pointermove', e=>{
-    if(!img || !activePointers.has(e.pointerId)) return;
-    activePointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
-    const rect = stage.getBoundingClientRect();
+  function processMove(){
+    moveScheduled = false;
+    const rect = currentRect();
 
     if(activePointers.size === 2){
       const pts = [...activePointers.values()];
       const dist = Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y);
+      const midX = (pts[0].x+pts[1].x)/2, midY = (pts[0].y+pts[1].y)/2;
+      const ax = (midX - rect.left)/rect.width, ay = (midY - rect.top)/rect.height;
       if(pinchStartDist > 0){
-        applyZoom(pinchStartScale * (dist/pinchStartDist));
+        applyZoom(pinchStartScale * (dist/pinchStartDist), ax, ay);
       }
       return;
     }
 
     if(dragging){
-      const dxUnit = (e.clientX - dragStartX) / rect.width * UNIT;
-      const dyUnit = (e.clientY - dragStartY) / rect.height * UNIT;
+      const dxUnit = (dragCurX - dragStartX) / rect.width * UNIT;
+      const dyUnit = (dragCurY - dragStartY) / rect.height * UNIT;
       offX = startOffX + dxUnit;
       offY = startOffY + dyUnit;
       clampOffsets();
       layoutImage();
+    }
+  }
+
+  let dragCurX = 0, dragCurY = 0;
+  stage.addEventListener('pointermove', e=>{
+    if(!img || !activePointers.has(e.pointerId)) return;
+    activePointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    dragCurX = e.clientX; dragCurY = e.clientY;
+    if(!moveScheduled){
+      moveScheduled = true;
+      requestAnimationFrame(processMove);
     }
   });
 
@@ -821,6 +819,7 @@
       if(dragging) renderResult();
       dragging = false;
       stage.classList.remove('dragging');
+      cachedRect = null;
     } else if(activePointers.size === 1){
       const [pt] = [...activePointers.values()];
       dragging = true;
@@ -831,12 +830,13 @@
   }
   stage.addEventListener('pointerup', endPointer);
   stage.addEventListener('pointercancel', endPointer);
-  stage.addEventListener('pointerleave', e=>{ if(activePointers.size<=1){} });
 
   stage.addEventListener('wheel', e=>{
     if(!img) return;
     e.preventDefault();
-    applyZoom(userScale - e.deltaY*0.0018);
+    const rect = stage.getBoundingClientRect();
+    const ax = (e.clientX - rect.left)/rect.width, ay = (e.clientY - rect.top)/rect.height;
+    applyZoom(userScale - e.deltaY*0.0018, ax, ay);
     renderResult();
   }, {passive:false});
 
@@ -846,9 +846,7 @@
   fileInput.addEventListener('change', e=>{
     if(e.target.files[0]) loadFile(e.target.files[0]);
   });
-  ['dragover'].forEach(evt=>{
-    stage.addEventListener(evt, e=>{ e.preventDefault(); });
-  });
+  stage.addEventListener('dragover', e=>{ e.preventDefault(); });
   stage.addEventListener('drop', e=>{
     e.preventDefault();
     const file = e.dataTransfer.files && e.dataTransfer.files[0];
@@ -857,9 +855,11 @@
 
   document.getElementById('centerBtn').addEventListener('click', ()=>{
     if(!img) return;
-    userScale = 1;
-    resetFit();
-    layoutImage();
+    withSnap(()=>{
+      userScale = 1;
+      resetFit();
+      layoutImage();
+    });
     zoomSlider.value = 100;
     hudZoom.textContent = '100%';
     renderResult();
@@ -874,7 +874,6 @@
 
   // ---------------- Border controls ----------------
   const borderSwitch = document.getElementById('borderSwitch');
-  borderSwitch.classList.add('on');
   borderSwitch.addEventListener('click', ()=>{
     borderEnabled = !borderEnabled;
     borderSwitch.classList.toggle('on', borderEnabled);
@@ -911,22 +910,15 @@
   });
 
   // ---------------- Background controls ----------------
-  const bgTransparentBtn = document.getElementById('bgTransparent');
-  const bgSolidBtn = document.getElementById('bgSolid');
   const bgColorRow = document.getElementById('bgColorRow');
-  bgTransparentBtn.addEventListener('click', ()=>{
-    bgMode='transparent';
-    bgTransparentBtn.classList.add('active');
-    bgSolidBtn.classList.remove('active');
-    bgColorRow.style.display='none';
-    renderResult();
-  });
-  bgSolidBtn.addEventListener('click', ()=>{
-    bgMode='solid';
-    bgSolidBtn.classList.add('active');
-    bgTransparentBtn.classList.remove('active');
-    bgColorRow.style.display='flex';
-    renderResult();
+  document.querySelectorAll('#bgSeg button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('#bgSeg button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      bgMode = btn.dataset.mode;
+      bgColorRow.style.display = bgMode === 'solid' ? 'flex' : 'none';
+      renderResult();
+    });
   });
   const bgColorInput = document.getElementById('bgColor');
   const bgSwatch = document.getElementById('bgSwatch');
@@ -942,12 +934,20 @@
       document.querySelectorAll('#sizeSeg button').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
       outputSize = +btn.dataset.size;
-      hudSize.textContent = outputSize + '×' + outputSize;
+      hudSize.textContent = outputSize + ' × ' + outputSize;
     });
   });
 
-  // ---------------- Resize ----------------
-  window.addEventListener('resize', ()=>{ updateOverlays(); });
+  // ---------------- Resize (keeps the square stage and image in sync) ----------------
+  let resizeTimer = null;
+  window.addEventListener('resize', ()=>{
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(()=>{
+      cachedRect = null;
+      updateOverlays();
+      if(img) layoutImage();
+    }, 60);
+  });
 
   // ---------------- Save / Export ----------------
   const isMobileUA = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -990,8 +990,9 @@
   });
 
   // init
+  document.getElementById('borderSwitch').classList.add('on');
   updateOverlays();
-  hudSize.textContent = outputSize + '×' + outputSize;
+  hudSize.textContent = outputSize + ' × ' + outputSize;
 })();
 </script>
 </body>
