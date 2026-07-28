@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Framer — PFP Cropper</title>
+<title>PFP Creator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Alan+Sans:wght@400..800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Parkinsans:wght@300..800&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#000000;
@@ -20,45 +20,56 @@
     --accent:#0a84ff;
     --accent-dim: rgba(10,132,255,0.16);
     --radius-lg:18px;
-    --radius-md:12px;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;}
   body{
     background:var(--bg);
     color:var(--text);
-    font-family:'Alan Sans', system-ui, -apple-system, sans-serif;
+    font-family:'Parkinsans', system-ui, -apple-system, sans-serif;
     font-feature-settings:'tnum' 1;
     min-height:100dvh;
     overflow-x:hidden;
   }
-  .app{
+
+  /* ---------- Sticky top bar (keeps the pfp visible at all times) ---------- */
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:40;
+    background:rgba(0,0,0,.72);
+    backdrop-filter:blur(20px) saturate(180%);
+    -webkit-backdrop-filter:blur(20px) saturate(180%);
+    border-bottom:1px solid var(--sep);
+    padding-top:env(safe-area-inset-top);
+  }
+  .topbar-inner{
     max-width:1080px;
     margin:0 auto;
-    padding:22px 18px 110px;
-    min-height:100dvh;
-  }
-
-  /* ---------- Header ---------- */
-  header{
+    padding:13px 18px;
     display:flex;
     align-items:center;
     justify-content:space-between;
-    gap:12px;
-    padding:2px 2px 22px;
-    margin-bottom:20px;
   }
-  h1{
-    font-size:20px;
+  .topbar h1{
+    font-size:17px;
     font-weight:700;
     letter-spacing:-0.01em;
     margin:0;
   }
-  header p{
-    margin:0;
-    color:var(--text-3);
-    font-size:13px;
-    font-weight:500;
+  .header-avatar{
+    width:34px;height:34px;
+    border-radius:50%;
+    background:var(--surface-3);
+    overflow:hidden;
+    flex:none;
+  }
+  .header-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+
+  .app{
+    max-width:1080px;
+    margin:0 auto;
+    padding:20px 18px 110px;
   }
 
   /* ---------- Workspace layout ---------- */
@@ -78,11 +89,8 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:16px;
+    gap:14px;
   }
-
-  /* True-square container: padding-top 100% is bulletproof across browsers,
-     unlike aspect-ratio which can misbehave inside grid/flex tracks. */
   .stage-frame{
     position:relative;
     width:100%;
@@ -90,10 +98,7 @@
     padding-top:100%;
     height:0;
   }
-  .stage-frame-inner{
-    position:absolute;
-    inset:0;
-  }
+  .stage-frame-inner{ position:absolute; inset:0; }
 
   .stage{
     position:relative;
@@ -105,7 +110,6 @@
     touch-action:none;
     cursor:grab;
     user-select:none;
-    box-shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 20px 40px -20px rgba(0,0,0,.6);
   }
   .stage.dragging{cursor:grabbing;}
   .stage img{
@@ -157,13 +161,6 @@
   .placeholder strong{font-size:15px;font-weight:600;color:var(--text);}
   .placeholder span{font-size:12.5px;color:var(--text-3); font-weight:500;}
 
-  .hud{
-    font-size:13px;
-    font-weight:600;
-    color:var(--text-2);
-    letter-spacing:-0.01em;
-  }
-
   .stage-actions{
     display:flex;
     gap:6px;
@@ -171,9 +168,8 @@
     max-width:400px;
   }
 
-  /* ---------- Buttons ---------- */
   button{
-    font-family:'Alan Sans', sans-serif;
+    font-family:'Parkinsans', sans-serif;
     border:none;
     cursor:pointer;
     color:var(--text);
@@ -186,7 +182,7 @@
     font-weight:600;
     padding:10px;
     border-radius:10px;
-    transition:background .15s ease, opacity .15s ease;
+    transition:background .15s ease;
   }
   .text-btn:active{background:var(--accent-dim);}
   input[type=file]{display:none;}
@@ -202,14 +198,6 @@
     border-radius:var(--radius-lg);
     overflow:hidden;
   }
-  .group-title{
-    font-size:12px;
-    font-weight:700;
-    letter-spacing:.02em;
-    text-transform:uppercase;
-    color:var(--text-3);
-    margin:0 0 8px 14px;
-  }
   .row{
     display:flex;
     align-items:center;
@@ -221,33 +209,44 @@
   }
   .row:last-child{border-bottom:none;}
   .row label{font-size:15px; color:var(--text); flex:none; font-weight:500;}
-  .row .sub{font-size:12.5px; color:var(--text-3); font-weight:500; margin-top:1px;}
   .row .value{
     font-size:14px;
     font-weight:600;
     color:var(--text-2);
-    min-width:30px;
+    min-width:34px;
     text-align:right;
     font-variant-numeric:tabular-nums;
   }
 
+  /* Sliders — explicit box heights so the thumb always sits dead-center on the track */
   input[type=range]{
     -webkit-appearance:none;
     appearance:none;
     flex:1;
-    height:4px;
-    background:var(--surface-3);
-    border-radius:2px;
+    height:20px;
+    background:transparent;
     outline:none;
+    padding:0;
+    margin:0;
+  }
+  input[type=range]::-webkit-slider-runnable-track{
+    height:4px;
+    border-radius:2px;
+    background:var(--surface-3);
   }
   input[type=range]::-webkit-slider-thumb{
     -webkit-appearance:none;
-    width:22px;height:22px;
+    width:20px;height:20px;
+    margin-top:-8px;
     border-radius:50%;
     background:#ffffff;
     box-shadow:0 1px 4px rgba(0,0,0,.4);
     cursor:pointer;
-    margin-top:0;
+  }
+  input[type=range]::-moz-range-track{
+    height:4px;
+    border-radius:2px;
+    background:var(--surface-3);
   }
   input[type=range]::-moz-range-thumb{
     width:20px;height:20px;
@@ -257,13 +256,9 @@
     box-shadow:0 1px 4px rgba(0,0,0,.4);
     cursor:pointer;
   }
-  input[type=range]::-webkit-slider-runnable-track{
-    height:4px; border-radius:2px;
-  }
 
   .slider-row{display:flex; align-items:center; gap:12px; flex:1;}
 
-  /* toggle switch */
   .switch{
     position:relative;
     width:44px;height:26px;
@@ -312,7 +307,7 @@
     border-radius:8px;
     padding:7px 10px;
     font-size:14px;
-    font-family:'Alan Sans',sans-serif;
+    font-family:'Parkinsans',sans-serif;
     font-weight:500;
   }
 
@@ -340,28 +335,86 @@
     color:var(--text);
   }
 
-  /* ---------- Result preview ---------- */
-  .result-row{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    padding:14px;
+  /* ---------- Platform previews ---------- */
+  .previews{ margin-top:32px; }
+  .section-title{
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--text-3);
+    margin:0 0 12px 2px;
   }
-  .result-canvas-wrap{
-    width:56px;height:56px;
-    border-radius:50%;
-    flex:none;
-    background:
-      linear-gradient(45deg,#2a2a2c 25%,transparent 25%) 0 0/10px 10px,
-      linear-gradient(-45deg,#2a2a2c 25%,transparent 25%) 0 0/10px 10px,
-      linear-gradient(45deg,transparent 75%,#2a2a2c 75%) 0 0/10px 10px,
-      linear-gradient(-45deg,transparent 75%,#2a2a2c 75%) 0 0/10px 10px,
-      #1c1c1e;
-    overflow:hidden;
+  .mockup-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
   }
-  .result-canvas-wrap canvas{width:100%;height:100%;display:block;}
-  .result-text{font-size:13px; color:var(--text-3); line-height:1.45; font-weight:500;}
-  .result-text b{color:var(--text-2); font-weight:600;}
+  @media (max-width:700px){ .mockup-grid{grid-template-columns:1fr;} }
+
+  .mockup-card{ border-radius:20px; overflow:hidden; }
+  .mockup-eyebrow{
+    font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    padding:13px 16px 0;
+  }
+  .live-avatar-wrap{ position:relative; overflow:hidden; border-radius:50%; background:#c8c8ca; flex:none; }
+  .live-avatar-wrap img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+  /* Instagram */
+  .mockup-card.ig{ background:#ffffff; color:#000000; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  .ig .mockup-eyebrow{ color:#8e8e8e; }
+  .ig-header{ display:flex; align-items:center; gap:22px; padding:14px 16px 0; }
+  .ig-avatar{ width:78px;height:78px; }
+  .ig-stats{ display:flex; gap:20px; }
+  .ig-stat{ display:flex; flex-direction:column; align-items:center; }
+  .ig-stat b{ font-size:16px; font-weight:600; }
+  .ig-stat span{ color:#8e8e8e; font-size:12.5px; }
+  .ig-name{ padding:12px 16px 0; font-weight:600; font-size:14px; }
+  .ig-edit-btn{
+    margin:10px 16px 16px; padding:7px; width:calc(100% - 32px);
+    border:1px solid #dbdbdb; border-radius:8px; background:none; color:#000;
+    font-weight:600; font-size:13px; font-family:inherit;
+  }
+
+  /* X */
+  .mockup-card.x{ background:#000000; color:#ffffff; font-family:"TwitterChirp",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  .x .mockup-eyebrow{ color:#71767b; }
+  .x-banner{ height:64px; margin-top:10px; background:linear-gradient(135deg,#1d2733,#0f1419); }
+  .x-avatar-row{ display:flex; align-items:flex-end; justify-content:space-between; padding:0 16px; margin-top:-34px; }
+  .x-avatar{ width:68px;height:68px; box-shadow:0 0 0 4px #000; }
+  .x-follow-btn{
+    background:#eff3f4; color:#0f1419; border:none; border-radius:20px;
+    padding:8px 16px; font-weight:700; font-size:13.5px; font-family:inherit; margin-bottom:6px;
+  }
+  .x-name{ padding:10px 16px 0; font-weight:800; font-size:15.5px; }
+  .x-handle{ padding:1px 16px 0; color:#71767b; font-size:13.5px; }
+  .x-bio{ padding:8px 16px 16px; font-size:13.5px; line-height:1.4; }
+
+  /* LinkedIn */
+  .mockup-card.li{ background:#ffffff; color:rgba(0,0,0,.9); font-family:-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; }
+  .li .mockup-eyebrow{ color:#0a66c2; }
+  .li-banner{ height:54px; margin-top:10px; background:linear-gradient(135deg,#a8c5e0,#8fb4d9); }
+  .li-avatar-row{ padding:0 16px; margin-top:-32px; }
+  .li-avatar{ width:72px;height:72px; box-shadow:0 0 0 4px #fff; }
+  .li-name{ padding:10px 16px 0; font-weight:700; font-size:16px; }
+  .li-headline{ padding:2px 16px 0; font-size:13px; color:rgba(0,0,0,.6); }
+  .li-location{ padding:2px 16px 0; font-size:12px; color:rgba(0,0,0,.6); }
+  .li-btns{ display:flex; gap:8px; padding:12px 16px 16px; }
+  .li-connect{ background:#0a66c2; color:#fff; border:none; border-radius:20px; padding:7px 18px; font-weight:600; font-size:13.5px; font-family:inherit; }
+  .li-message{ background:none; color:#0a66c2; border:1.4px solid #0a66c2; border-radius:20px; padding:7px 18px; font-weight:600; font-size:13.5px; font-family:inherit; }
+
+  /* Discord */
+  .mockup-card.dc{ background:#313338; color:#f2f3f5; font-family:"gg sans","Noto Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  .dc .mockup-eyebrow{ color:#949ba4; }
+  .dc-banner{ height:50px; margin-top:10px; background:linear-gradient(135deg,#5865f2,#404be3); }
+  .dc-avatar-row{ padding:0 16px; margin-top:-30px; }
+  .dc-avatar{ width:68px;height:68px; box-shadow:0 0 0 4px #313338; position:relative; }
+  .dc-status{
+    position:absolute; right:0; bottom:0; width:16px;height:16px; border-radius:50%;
+    background:#23a559; box-shadow:0 0 0 4px #313338;
+  }
+  .dc-name{ padding:10px 16px 0; font-weight:700; font-size:15px; }
+  .dc-tag{ padding:2px 16px 16px; font-size:12.5px; color:#949ba4; }
 
   /* ---------- Export bar ---------- */
   .export-bar{
@@ -374,11 +427,7 @@
     z-index:20;
     pointer-events:none;
   }
-  .export-bar .inner{
-    width:100%;
-    max-width:480px;
-    pointer-events:auto;
-  }
+  .export-bar .inner{ width:100%; max-width:480px; pointer-events:auto; }
   .save-btn{
     width:100%;
     background:var(--accent);
@@ -418,12 +467,14 @@
 </head>
 <body>
 
-<div class="app">
-  <header>
-    <h1>Framer</h1>
-    <p>Logo → profile picture</p>
-  </header>
+<header class="topbar">
+  <div class="topbar-inner">
+    <h1>PFP Creator</h1>
+    <div class="header-avatar"><img class="live-avatar" alt=""></div>
+  </div>
+</header>
 
+<div class="app">
   <div class="workspace">
     <!-- STAGE -->
     <section class="stage-panel">
@@ -441,7 +492,6 @@
           </div>
         </div>
       </div>
-      <div class="hud"><span id="hudZoom">100%</span> · <span id="hudSize">1024 × 1024</span></div>
       <div class="stage-actions">
         <button class="text-btn" id="replaceBtn">Replace</button>
         <button class="text-btn" id="centerBtn">Recenter</button>
@@ -457,6 +507,7 @@
           <label>Zoom</label>
           <div class="slider-row">
             <input type="range" id="zoomSlider" min="100" max="400" value="100" step="1">
+            <span class="value" id="zoomVal">100%</span>
           </div>
         </div>
       </div>
@@ -524,15 +575,70 @@
         </div>
       </div>
 
-      <div class="group">
-        <div class="result-row">
-          <div class="result-canvas-wrap"><canvas id="resultCanvas"></canvas></div>
-          <div class="result-text">Live result — <b>matches your export exactly</b>, transparent outside the ring.</div>
+    </aside>
+  </div>
+
+  <!-- PLATFORM PREVIEWS -->
+  <section class="previews">
+    <h2 class="section-title">Preview</h2>
+    <div class="mockup-grid">
+
+      <div class="mockup-card ig">
+        <div class="mockup-eyebrow">Instagram</div>
+        <div class="ig-header">
+          <div class="live-avatar-wrap ig-avatar"><img class="live-avatar" alt=""></div>
+          <div class="ig-stats">
+            <div class="ig-stat"><b>12</b><span>Posts</span></div>
+            <div class="ig-stat"><b>1,204</b><span>Followers</span></div>
+            <div class="ig-stat"><b>187</b><span>Following</span></div>
+          </div>
+        </div>
+        <div class="ig-name">yourhandle</div>
+        <button class="ig-edit-btn">Edit profile</button>
+      </div>
+
+      <div class="mockup-card x">
+        <div class="mockup-eyebrow">X</div>
+        <div class="x-banner"></div>
+        <div class="x-avatar-row">
+          <div class="live-avatar-wrap x-avatar"><img class="live-avatar" alt=""></div>
+          <button class="x-follow-btn">Follow</button>
+        </div>
+        <div class="x-name">Your Name</div>
+        <div class="x-handle">@yourhandle</div>
+        <div class="x-bio">Designer making things people actually want to use.</div>
+      </div>
+
+      <div class="mockup-card li">
+        <div class="mockup-eyebrow">LinkedIn</div>
+        <div class="li-banner"></div>
+        <div class="li-avatar-row">
+          <div class="live-avatar-wrap li-avatar"><img class="live-avatar" alt=""></div>
+        </div>
+        <div class="li-name">Your Name</div>
+        <div class="li-headline">Product Designer at Your Company</div>
+        <div class="li-location">San Francisco, CA</div>
+        <div class="li-btns">
+          <button class="li-connect">Connect</button>
+          <button class="li-message">Message</button>
         </div>
       </div>
 
-    </aside>
-  </div>
+      <div class="mockup-card dc">
+        <div class="mockup-eyebrow">Discord</div>
+        <div class="dc-banner"></div>
+        <div class="dc-avatar-row">
+          <div class="live-avatar-wrap dc-avatar">
+            <img class="live-avatar" alt="">
+            <span class="dc-status"></span>
+          </div>
+        </div>
+        <div class="dc-name">yourname</div>
+        <div class="dc-tag">Online</div>
+      </div>
+
+    </div>
+  </section>
 </div>
 
 <div class="export-bar">
@@ -541,6 +647,8 @@
   </div>
 </div>
 <div class="toast" id="toast"></div>
+
+<canvas id="resultCanvas" style="display:none;"></canvas>
 
 <script>
 (function(){
@@ -571,10 +679,10 @@
   const ringPreview = document.getElementById('ringPreview');
   const fileInput = document.getElementById('fileInput');
   const zoomSlider = document.getElementById('zoomSlider');
-  const hudZoom = document.getElementById('hudZoom');
-  const hudSize = document.getElementById('hudSize');
+  const zoomVal = document.getElementById('zoomVal');
   const resultCanvas = document.getElementById('resultCanvas');
   const toast = document.getElementById('toast');
+  const liveAvatars = document.querySelectorAll('.live-avatar');
 
   function showToast(msg){
     toast.textContent = msg;
@@ -603,6 +711,7 @@
         placeholder.style.display = 'none';
         userScale = 1;
         zoomSlider.value = 100;
+        zoomVal.textContent = '100%';
         resetFit();
         layoutImage();
         updateOverlays();
@@ -650,7 +759,7 @@
     clampOffsets();
     layoutImage();
     zoomSlider.value = Math.round(userScale*100);
-    hudZoom.textContent = Math.round(userScale*100) + '%';
+    zoomVal.textContent = Math.round(userScale*100) + '%';
   }
 
   function withSnap(fn){
@@ -660,9 +769,9 @@
   }
 
   // ---------------- Overlay geometry (mask + ring) ----------------
-  // size is expressed in the SAME units as the space it's drawn into,
-  // scaleF converts the borderWidthRef/borderGapRef "per-1000" values
-  // into that space so the on-screen ring and the exported ring always match.
+  // scaleF converts the borderWidthRef/borderGapRef "per-1000" values into
+  // whatever space we're drawing into, so the on-screen ring and the
+  // exported (and previewed) ring always match exactly.
   function geometry(size){
     const scaleF = size / UNIT;
     const strokeW = borderEnabled ? borderWidthRef * scaleF : 0;
@@ -693,7 +802,7 @@
     }
   }
 
-  // ---------------- Canvas render (used for live result + export — same code path) ----------------
+  // ---------------- Canvas render (single source of truth for every preview + the export) ----------------
   function renderToCanvas(canvas, size){
     canvas.width = size;
     canvas.height = size;
@@ -749,6 +858,8 @@
 
   function renderResult(){
     renderToCanvas(resultCanvas, 240);
+    const url = resultCanvas.toDataURL('image/png');
+    liveAvatars.forEach(el=>{ el.src = url; });
   }
 
   // ---------------- Pointer drag (transform-based + rAF throttled for smoothness) ----------------
@@ -757,6 +868,7 @@
   const activePointers = new Map();
   let pinchStartDist = 0, pinchStartScale = 1;
   let moveScheduled = false;
+  let dragCurX = 0, dragCurY = 0;
 
   stage.addEventListener('pointerdown', e=>{
     if(!img) return;
@@ -802,7 +914,6 @@
     }
   }
 
-  let dragCurX = 0, dragCurY = 0;
   stage.addEventListener('pointermove', e=>{
     if(!img || !activePointers.has(e.pointerId)) return;
     activePointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
@@ -861,7 +972,7 @@
       layoutImage();
     });
     zoomSlider.value = 100;
-    hudZoom.textContent = '100%';
+    zoomVal.textContent = '100%';
     renderResult();
   });
 
@@ -934,11 +1045,10 @@
       document.querySelectorAll('#sizeSeg button').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
       outputSize = +btn.dataset.size;
-      hudSize.textContent = outputSize + ' × ' + outputSize;
     });
   });
 
-  // ---------------- Resize (keeps the square stage and image in sync) ----------------
+  // ---------------- Resize ----------------
   let resizeTimer = null;
   window.addEventListener('resize', ()=>{
     clearTimeout(resizeTimer);
@@ -990,9 +1100,8 @@
   });
 
   // init
-  document.getElementById('borderSwitch').classList.add('on');
   updateOverlays();
-  hudSize.textContent = outputSize + ' × ' + outputSize;
+  renderResult();
 })();
 </script>
 </body>
