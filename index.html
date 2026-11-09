@@ -1,0 +1,2410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>PFP Creator</title>
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'><rect width='256' height='256' rx='64' fill='%2318181b'/><circle cx='128' cy='128' r='76' fill='none' stroke='%2310b981' stroke-width='20'/><circle cx='128' cy='108' r='28' fill='%23fafafa'/><path d='M78 176c12-22 31-32 50-32s38 10 50 32' fill='none' stroke='%23fafafa' stroke-width='18' stroke-linecap='round'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Geist:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<style>
+  :root {
+    --bg: #09090b;
+    --bg-elevated: #111113;
+    --surface: #161619;
+    --surface-2: #1f1f23;
+    --surface-3: #2a2a30;
+    --border: rgba(255, 255, 255, 0.075);
+    --border-strong: rgba(255, 255, 255, 0.14);
+    --text: #fafafa;
+    --text-2: #a1a1aa;
+    --text-3: #636369;
+    --accent: #10b981;
+    --accent-soft: rgba(16, 185, 129, 0.14);
+    --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+    --radius-xl: 18px;
+    --radius-lg: 12px;
+    --radius-md: 8px;
+    --radius-sm: 6px;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-feature-settings: 'tnum' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  button, select, input {
+    font-family: inherit;
+    color: inherit;
+    border: none;
+    background: none;
+    outline: none;
+  }
+
+  button {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  input[type="file"] {
+    display: none;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    height: 54px;
+    background: rgba(9, 9, 11, 0.82);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 14.5px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .brand i {
+    font-size: 19px;
+    color: var(--accent);
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .size-pill {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 2px;
+  }
+
+  .size-pill button {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-2);
+    padding: 5px 10px;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s ease;
+  }
+
+  .size-pill button.active {
+    background: var(--surface-3);
+    color: var(--text);
+  }
+
+  .export-trigger {
+    background: var(--text);
+    color: var(--bg);
+    height: 34px;
+    padding: 0 14px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: transform 0.12s ease, opacity 0.12s ease;
+  }
+
+  .export-trigger:hover {
+    opacity: 0.92;
+  }
+
+  .export-trigger:active {
+    transform: scale(0.97);
+  }
+
+  .studio-shell {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .editor-deck {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 350px;
+    gap: 24px;
+    align-items: stretch;
+    min-height: 580px;
+  }
+
+  .viewport-well {
+    position: relative;
+    background-color: var(--bg-elevated);
+    background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-size: 20px 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px 76px;
+    overflow: hidden;
+  }
+
+  .stage-frame {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    aspect-ratio: 1 / 1;
+    border-radius: 28px;
+    box-shadow: 0 28px 70px -15px rgba(0, 0, 0, 0.85), 0 0 0 1px var(--border-strong);
+    overflow: hidden;
+  }
+
+  .stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: #141417;
+    background-image: 
+      linear-gradient(45deg, #1b1b1f 25%, transparent 25%), 
+      linear-gradient(-45deg, #1b1b1f 25%, transparent 25%), 
+      linear-gradient(45deg, transparent 75%, #1b1b1f 75%), 
+      linear-gradient(-45deg, transparent 75%, #1b1b1f 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+    overflow: hidden;
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    transform: translateZ(0);
+    isolation: isolate;
+    touch-action: none;
+    cursor: grab;
+    user-select: none;
+  }
+
+  .stage.dragging {
+    cursor: grabbing;
+  }
+
+  .stage-bg-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  .stage img {
+    position: absolute;
+    left: 0;
+    top: 0;
+    max-width: none;
+    max-height: none;
+    pointer-events: none;
+    display: block;
+    transform-origin: 0 0;
+    will-change: transform, filter;
+  }
+
+  .crop-mask {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    box-shadow: 0 0 0 2000px rgba(9, 9, 11, 0.78);
+    pointer-events: none;
+    transition: border-radius 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .ring-preview {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    pointer-events: none;
+    box-sizing: border-box;
+    transition: border-radius 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .grid-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.18s ease, border-radius 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    overflow: hidden;
+    border-radius: 50%;
+    z-index: 12;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+  }
+
+  .grid-overlay.active {
+    opacity: 1;
+  }
+
+  .grid-overlay::before,
+  .grid-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .grid-overlay::before {
+    background: linear-gradient(
+      to right,
+      transparent 33.33%,
+      rgba(255, 255, 255, 0.24) 33.33%,
+      rgba(255, 255, 255, 0.24) calc(33.33% + 1px),
+      transparent calc(33.33% + 1px),
+      transparent 66.66%,
+      rgba(255, 255, 255, 0.24) 66.66%,
+      rgba(255, 255, 255, 0.24) calc(66.66% + 1px),
+      transparent calc(66.66% + 1px)
+    );
+  }
+
+  .grid-overlay::after {
+    background: linear-gradient(
+      to bottom,
+      transparent 33.33%,
+      rgba(255, 255, 255, 0.24) 33.33%,
+      rgba(255, 255, 255, 0.24) calc(33.33% + 1px),
+      transparent calc(33.33% + 1px),
+      transparent 66.66%,
+      rgba(255, 255, 255, 0.24) 66.66%,
+      rgba(255, 255, 255, 0.24) calc(66.66% + 1px),
+      transparent calc(66.66% + 1px)
+    );
+  }
+
+  .grid-center-cross {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    transform: translate(-50%, -50%);
+  }
+
+  .grid-center-cross::before,
+  .grid-center-cross::after {
+    content: '';
+    position: absolute;
+    background: var(--accent);
+  }
+
+  .grid-center-cross::before {
+    top: 6px;
+    left: 0;
+    right: 0;
+    height: 2px;
+  }
+
+  .grid-center-cross::after {
+    left: 6px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+  }
+
+  .placeholder {
+    position: absolute;
+    inset: 0;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 28px;
+    text-align: center;
+    cursor: pointer;
+    z-index: 20;
+    transition: background 0.2s ease;
+  }
+
+  .placeholder:hover {
+    background: var(--surface-2);
+  }
+
+  .placeholder-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--surface-3);
+    border: 1px solid var(--border-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: var(--text);
+  }
+
+  .placeholder strong {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .floating-hud {
+    position: absolute;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(22, 22, 25, 0.9);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    z-index: 25;
+  }
+
+  .hud-btn {
+    height: 32px;
+    padding: 0 11px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+  }
+
+  .hud-btn i {
+    font-size: 15px;
+    color: var(--text);
+  }
+
+  .hud-btn:hover {
+    background: var(--surface-3);
+    color: var(--text);
+  }
+
+  .hud-sep {
+    width: 1px;
+    height: 16px;
+    background: var(--border);
+    margin: 0 2px;
+  }
+
+  .inspector-dock {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .inspector-header {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .inspector-header span {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .inspector-header span i {
+    color: var(--text-2);
+    font-size: 15px;
+  }
+
+  .reset-all-btn {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-2);
+    padding: 4px 9px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .reset-all-btn:hover {
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+
+  .inspector-body {
+    padding: 4px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+  }
+
+  .prop-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .prop-section:first-child {
+    border-top: none;
+    padding-top: 10px;
+  }
+
+  .prop-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .prop-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .prop-title i {
+    color: var(--text-2);
+    font-size: 14px;
+  }
+
+  .prop-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 28px;
+  }
+
+  .prop-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-2);
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .prop-label i {
+    font-size: 14px;
+    color: var(--text-3);
+  }
+
+  .prop-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    justify-content: flex-end;
+  }
+
+  .prop-val {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-2);
+    min-width: 38px;
+    text-align: right;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    max-width: 145px;
+    height: 22px;
+    background: transparent;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 99px;
+    background: var(--surface-3);
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    margin-top: -5px;
+    border-radius: 50%;
+    background: var(--text);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    transition: transform 0.1s ease, background 0.15s ease;
+  }
+
+  input[type="range"]:hover::-webkit-slider-thumb {
+    transform: scale(1.12);
+    background: var(--accent);
+  }
+
+  input[type="range"]::-moz-range-track {
+    height: 4px;
+    border-radius: 99px;
+    background: var(--surface-3);
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--text);
+    border: none;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  .switch {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    background: var(--surface-3);
+    border-radius: 99px;
+    cursor: pointer;
+    transition: background 0.18s ease;
+  }
+
+  .switch.on {
+    background: var(--accent);
+  }
+
+  .switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .switch.on::after {
+    transform: translateX(16px);
+  }
+
+  .segmented {
+    display: flex;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 2px;
+    gap: 2px;
+    width: 100%;
+    max-width: 185px;
+  }
+
+  .segmented button {
+    flex: 1;
+    padding: 5px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-2);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all 0.15s ease;
+  }
+
+  .segmented button.active {
+    background: var(--surface-3);
+    color: var(--text);
+  }
+
+  .style-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .style-chip {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 6px 4px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-2);
+    text-align: center;
+    transition: all 0.15s ease;
+  }
+
+  .style-chip:hover {
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+
+  .style-chip.active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  .color-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .preset-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: transform 0.12s ease;
+  }
+
+  .preset-dot:hover {
+    transform: scale(1.14);
+  }
+
+  .color-Trigger {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--border-strong);
+    padding: 2px;
+    background: var(--bg-elevated);
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .color-Trigger .swatch-circle {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+  }
+
+  .color-Trigger input[type="color"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
+
+  .collapsible-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: opacity 0.2s ease;
+  }
+
+  .collapsible-group.disabled {
+    opacity: 0.32;
+    pointer-events: none;
+  }
+
+  .mockup-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-rows: 278px;
+    gap: 20px;
+  }
+
+  .platform-card {
+    height: 278px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .platform-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    color: #fff;
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  .live-avatar-wrap {
+    position: relative;
+    overflow: hidden;
+    border-radius: 50%;
+    background: #27272a;
+    flex: none;
+    transition: border-radius 0.25s ease;
+  }
+
+  .live-avatar-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* 1. X / Twitter */
+  .mock-x {
+    background: #000000;
+    color: #e7e9ea;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  .x-cover {
+    height: 76px;
+    background: linear-gradient(135deg, #16181c 0%, #273340 50%, #0f1419 100%);
+    flex: none;
+  }
+
+  .x-body {
+    padding: 0 16px 14px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    justify-content: space-between;
+  }
+
+  .x-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: -34px;
+  }
+
+  .x-ava {
+    width: 68px;
+    height: 68px;
+    box-shadow: 0 0 0 4px #000000;
+  }
+
+  .x-btn {
+    background: #eff3f4;
+    color: #0f1419;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 6px 15px;
+    border-radius: 999px;
+  }
+
+  .x-user-title {
+    font-size: 16.5px;
+    font-weight: 800;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+  }
+
+  .x-verified {
+    color: #1d9bf0;
+    font-size: 16px;
+  }
+
+  .x-user-handle {
+    font-size: 13px;
+    color: #71767b;
+  }
+
+  .x-user-bio {
+    font-size: 13.5px;
+    color: #e7e9ea;
+    margin-top: 6px;
+  }
+
+  .x-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 12.5px;
+    color: #71767b;
+    margin-top: 6px;
+  }
+
+  .x-link {
+    color: #1d9bf0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .x-stats {
+    display: flex;
+    gap: 14px;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #71767b;
+  }
+
+  .x-stats b {
+    color: #e7e9ea;
+    font-weight: 700;
+  }
+
+  /* 2. Discord */
+  .mock-dc {
+    background: #111214;
+    color: #f2f3f5;
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .dc-cover {
+    height: 72px;
+    background: linear-gradient(125deg, #5865f2, #3b429f);
+    flex: none;
+  }
+
+  .dc-body {
+    padding: 0 14px 14px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    justify-content: space-between;
+  }
+
+  .dc-ava-holder {
+    position: relative;
+    width: 68px;
+    height: 68px;
+    margin-top: -34px;
+  }
+
+  .dc-ava {
+    width: 68px;
+    height: 68px;
+    box-shadow: 0 0 0 5px #111214;
+  }
+
+  .dc-status-dot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #23a559;
+    box-shadow: 0 0 0 4px #111214;
+  }
+
+  .dc-card-surface {
+    background: #1e1f22;
+    border-radius: 10px;
+    padding: 11px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .dc-display {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+
+  .dc-username {
+    font-size: 12.5px;
+    color: #949ba4;
+  }
+
+  .dc-divider {
+    height: 1px;
+    background: #2e3035;
+    margin: 2px 0;
+  }
+
+  .dc-about {
+    font-size: 12.5px;
+    color: #dbdee1;
+    line-height: 1.35;
+  }
+
+  .dc-link {
+    color: #00a8fc;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12.5px;
+  }
+
+  /* 3. Instagram */
+  .mock-ig {
+    background: #000000;
+    color: #f5f5f5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 18px 16px 14px;
+    justify-content: space-between;
+  }
+
+  .ig-top {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .ig-ring {
+    padding: 2.5px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5);
+    flex: none;
+  }
+
+  .ig-ava {
+    width: 70px;
+    height: 70px;
+    box-shadow: 0 0 0 3px #000000;
+  }
+
+  .ig-metrics {
+    display: flex;
+    flex: 1;
+    justify-content: space-around;
+  }
+
+  .ig-metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .ig-metric b {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .ig-metric span {
+    font-size: 12px;
+    color: #a8a8a8;
+  }
+
+  .ig-bio-block {
+    font-size: 13px;
+    line-height: 1.38;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .ig-bio-name {
+    font-weight: 600;
+    font-size: 13.5px;
+  }
+
+  .ig-bio-desc {
+    color: #d4d4d8;
+  }
+
+  .ig-bio-link {
+    color: #e0f1ff;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .ig-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .ig-btn {
+    background: #262626;
+    color: #ffffff;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 7px 0;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  /* 4. YouTube */
+  .mock-yt {
+    background: #0f0f0f;
+    color: #f1f1f1;
+    font-family: 'Roboto', Arial, sans-serif;
+  }
+
+  .yt-banner {
+    height: 68px;
+    background: linear-gradient(90deg, #1f1f1f, #2d2d2d, #181818);
+    flex: none;
+  }
+
+  .yt-content {
+    padding: 16px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex: 1;
+  }
+
+  .yt-ava {
+    width: 76px;
+    height: 76px;
+  }
+
+  .yt-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .yt-title {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .yt-meta {
+    font-size: 12px;
+    color: #aaaaaa;
+  }
+
+  .yt-desc {
+    font-size: 12.5px;
+    color: #d4d4d8;
+  }
+
+  .yt-link {
+    font-size: 12px;
+    color: #3ea6ff;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .yt-sub-btn {
+    margin-top: 6px;
+    align-self: flex-start;
+    background: #f1f1f1;
+    color: #0f0f0f;
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 999px;
+  }
+
+  /* 5. LinkedIn */
+  .mock-li {
+    background: #1b1f23;
+    color: rgba(255, 255, 255, 0.9);
+    font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  .li-cover {
+    height: 72px;
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    flex: none;
+  }
+
+  .li-body {
+    padding: 0 16px 14px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    justify-content: space-between;
+  }
+
+  .li-ava {
+    width: 68px;
+    height: 68px;
+    margin-top: -34px;
+    box-shadow: 0 0 0 4px #1b1f23;
+  }
+
+  .li-name {
+    font-size: 16.5px;
+    font-weight: 600;
+    margin-top: 6px;
+  }
+
+  .li-headline {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .li-link {
+    font-size: 12.5px;
+    color: #70b5f9;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+  }
+
+  .li-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .li-btn-primary {
+    background: #70b5f9;
+    color: #000000;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 6px 15px;
+    border-radius: 999px;
+  }
+
+  .li-btn-sec {
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+    font-size: 13px;
+    padding: 6px 15px;
+    border-radius: 999px;
+  }
+
+  /* 6. GitHub */
+  .mock-gh {
+    background: #0d1117;
+    color: #e6edf3;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+    padding: 18px 16px 14px;
+    justify-content: space-between;
+  }
+
+  .gh-top {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+
+  .gh-ava {
+    width: 68px;
+    height: 68px;
+    box-shadow: 0 0 0 1px rgba(240, 246, 252, 0.1);
+  }
+
+  .gh-names {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .gh-fullname {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  .gh-login {
+    font-size: 13.5px;
+    color: #8b949e;
+  }
+
+  .gh-bio {
+    font-size: 13px;
+    color: #e6edf3;
+  }
+
+  .gh-link {
+    font-size: 12.5px;
+    color: #58a6ff;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .gh-edit-btn {
+    width: 100%;
+    background: #21262d;
+    border: 1px solid rgba(240, 246, 252, 0.1);
+    color: #c9d1d9;
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 6px 0;
+    border-radius: 6px;
+    text-align: center;
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%) translateY(12px);
+    background: var(--text);
+    color: var(--bg);
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 100;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  @media (max-width: 1120px) {
+    .mockup-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 900px) {
+    .topbar {
+      padding: 0 14px;
+    }
+
+    .size-pill {
+      display: none;
+    }
+
+    .studio-shell {
+      padding: 12px 14px 48px;
+      gap: 24px;
+    }
+
+    .editor-deck {
+      grid-template-columns: minmax(0, 1fr);
+      min-height: auto;
+      gap: 16px;
+    }
+
+    .viewport-well {
+      position: sticky;
+      top: 60px;
+      z-index: 40;
+      padding: 16px 14px 58px;
+      box-shadow: 0 18px 38px rgba(0, 0, 0, 0.75);
+    }
+
+    .stage-frame {
+      max-width: 220px;
+      border-radius: 20px;
+    }
+
+    .floating-hud {
+      bottom: 10px;
+      padding: 3px;
+    }
+
+    .hud-btn {
+      height: 28px;
+      padding: 0 9px;
+      font-size: 11.5px;
+    }
+
+    .mockup-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <i class="ph-bold ph-Bounding-Box"></i>
+    <span>PFP Creator</span>
+  </div>
+  <div class="topbar-right">
+    <div class="size-pill" id="topSizeSeg">
+      <button data-size="512">512</button>
+      <button data-size="1024" class="active">1024</button>
+      <button data-size="2048">2048</button>
+    </div>
+    <button class="export-trigger" id="saveBtn">
+      <i class="ph-bold ph-download-simple"></i>
+      <span id="saveBtnLabel">Export</span>
+    </button>
+  </div>
+</header>
+
+<main class="studio-shell">
+  <section class="editor-deck">
+    <div class="viewport-well">
+      <div class="stage-frame" id="stageFrame">
+        <div class="stage" id="stage">
+          <div class="stage-bg-layer" id="stageBgLayer"></div>
+          <img id="dragImg" alt="" draggable="false">
+          <div class="grid-overlay" id="gridOverlay">
+            <div class="grid-center-cross"></div>
+          </div>
+          <div class="crop-mask" id="cropMask"></div>
+          <div class="ring-preview" id="ringPreview"></div>
+          <div class="placeholder" id="placeholder">
+            <div class="placeholder-icon">
+              <i class="ph-bold ph-upload-simple"></i>
+            </div>
+            <strong>Upload Image</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="floating-hud">
+        <button class="hud-btn" id="replaceBtn">
+          <i class="ph-bold ph-image"></i>
+          <span>Replace</span>
+        </button>
+        <div class="hud-sep"></div>
+        <button class="hud-btn" id="centerBtn">
+          <i class="ph-bold ph-crosshair"></i>
+          <span>Center</span>
+        </button>
+        <div class="hud-sep"></div>
+        <button class="hud-btn" id="flipHBtn" aria-label="Flip Horizontal">
+          <i class="ph-bold ph-flip-horizontal"></i>
+        </button>
+        <button class="hud-btn" id="flipVBtn" aria-label="Flip Vertical">
+          <i class="ph-bold ph-flip-vertical"></i>
+        </button>
+      </div>
+
+      <input type="file" id="fileInput" accept="image/*">
+    </div>
+
+    <aside class="inspector-dock">
+      <div class="inspector-header">
+        <span><i class="ph-bold ph-sliders-horizontal"></i> Adjustments</span>
+        <button class="reset-all-btn" id="resetAllBtn">
+          <i class="ph-bold ph-arrow-counter-clockwise"></i>
+          <span>Reset</span>
+        </button>
+      </div>
+
+      <div class="inspector-body">
+        <div class="prop-section">
+          <div class="prop-section-head">
+            <span class="prop-title"><i class="ph-bold ph-crop"></i> Transform</span>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label"><i class="ph-bold ph-magnifying-glass-plus"></i> Zoom</span>
+            <div class="prop-control">
+              <input type="range" id="zoomSlider" min="100" max="400" value="100" step="1">
+              <span class="prop-val" id="zoomVal">100%</span>
+            </div>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label"><i class="ph-bold ph-arrows-clockwise"></i> Rotate</span>
+            <div class="prop-control">
+              <input type="range" id="rotSlider" min="-180" max="180" value="0" step="1">
+              <span class="prop-val" id="rotVal">0°</span>
+            </div>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label"><i class="ph-bold ph-shapes"></i> Shape</span>
+            <div class="segmented" id="shapeSeg">
+              <button data-shape="circle" class="active"><i class="ph-bold ph-circle"></i> Circle</button>
+              <button data-shape="squircle"><i class="ph-bold ph-square"></i> Squircle</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="prop-section">
+          <div class="prop-section-head">
+            <span class="prop-title"><i class="ph-bold ph-circle-dashed"></i> Border</span>
+            <div class="switch on" id="borderSwitch"></div>
+          </div>
+          <div class="collapsible-group" id="borderGroup">
+            <div class="style-grid" id="borderStyleGrid">
+              <button class="style-chip active" data-style="solid">Solid</button>
+              <button class="style-chip" data-style="dashed">Dashed</button>
+              <button class="style-chip" data-style="dotted">Dotted</button>
+              <button class="style-chip" data-style="double">Double</button>
+            </div>
+            <div class="prop-row">
+              <span class="prop-label"><i class="ph-bold ph-line-segment"></i> Width</span>
+              <div class="prop-control">
+                <input type="range" id="borderWidth" min="0" max="60" value="24">
+                <span class="prop-val" id="borderWidthVal">24</span>
+              </div>
+            </div>
+            <div class="prop-row">
+              <span class="prop-label"><i class="ph-bold ph-arrows-out-line-horizontal"></i> Padding</span>
+              <div class="prop-control">
+                <input type="range" id="borderGap" min="0" max="50" value="8">
+                <span class="prop-val" id="borderGapVal">8</span>
+              </div>
+            </div>
+            <div class="prop-row">
+              <span class="prop-label"><i class="ph-bold ph-palette"></i> Color</span>
+              <div class="color-bar">
+                <button class="preset-dot" data-color="#ffffff" style="background:#ffffff;"></button>
+                <button class="preset-dot" data-color="#10b981" style="background:#10b981;"></button>
+                <button class="preset-dot" data-color="#3b82f6" style="background:#3b82f6;"></button>
+                <button class="preset-dot" data-color="#f59e0b" style="background:#f59e0b;"></button>
+                <div class="color-Trigger">
+                  <div class="swatch-circle" id="borderSwatch" style="background:#ffffff;"></div>
+                  <input type="color" id="borderColor" value="#ffffff">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="prop-section">
+          <div class="prop-section-head">
+            <span class="prop-title"><i class="ph-bold ph-paint-bucket"></i> Background</span>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label"><i class="ph-bold ph-checkerboard"></i> Mode</span>
+            <div class="segmented" id="bgSeg">
+              <button data-mode="transparent" class="active">Clear</button>
+              <button data-mode="solid">Fill</button>
+            </div>
+          </div>
+          <div class="prop-row" id="bgColorRow" style="display:none;">
+            <span class="prop-label"><i class="ph-bold ph-eyedropper"></i> Color</span>
+            <div class="color-bar">
+              <button class="preset-dot bg-preset" data-color="#09090b" style="background:#09090b;"></button>
+              <button class="preset-dot bg-preset" data-color="#1c1c1e" style="background:#1c1c1e;"></button>
+              <button class="preset-dot bg-preset" data-color="#ffffff" style="background:#ffffff;"></button>
+              <div class="color-Trigger">
+                <div class="swatch-circle" id="bgSwatch" style="background:#1c1c1e;"></div>
+                <input type="color" id="bgColor" value="#1c1c1e">
+              </div>
+            </div>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label"><i class="ph-bold ph-frame-corners"></i> Size</span>
+            <div class="segmented" id="sizeSeg">
+              <button data-size="512">512</button>
+              <button data-size="1024" class="active">1024</button>
+              <button data-size="2048">2048</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="prop-section">
+          <div class="prop-section-head">
+            <span class="prop-title"><i class="ph-bold ph-sun-dim"></i> Tone</span>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label"><i class="ph-bold ph-sun"></i> Brightness</span>
+            <div class="prop-control">
+              <input type="range" id="brightSlider" min="50" max="150" value="100">
+              <span class="prop-val" id="brightVal">100%</span>
+            </div>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label"><i class="ph-bold ph-circle-half"></i> Contrast</span>
+            <div class="prop-control">
+              <input type="range" id="contrastSlider" min="50" max="150" value="100">
+              <span class="prop-val" id="contrastVal">100%</span>
+            </div>
+          </div>
+          <div class="prop-row">
+            <span class="prop-label"><i class="ph-bold ph-drop-half-bottom"></i> Saturation</span>
+            <div class="prop-control">
+              <input type="range" id="satSlider" min="0" max="200" value="100">
+              <span class="prop-val" id="satVal">100%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="mockup-grid">
+    <!-- X / Twitter -->
+    <div class="platform-card mock-x">
+      <div class="platform-badge"><i class="ph-fill ph-x-logo"></i></div>
+      <div class="x-cover"></div>
+      <div class="x-body">
+        <div>
+          <div class="x-top-row">
+            <div class="live-avatar-wrap x-ava"><img class="live-avatar" alt=""></div>
+            <button class="x-btn">Follow</button>
+          </div>
+          <div class="x-user-title">
+            <span>Ayaan Ahmed</span>
+            <i class="ph-fill ph-seal-check x-verified"></i>
+          </div>
+          <div class="x-user-handle">@ayaanahmed</div>
+          <div class="x-user-bio">Graphic Designer & Photographer</div>
+          <div class="x-meta-row">
+            <span class="x-link"><i class="ph-bold ph-link"></i> ayaanahmed.org</span>
+          </div>
+        </div>
+        <div class="x-stats">
+          <span><b>248</b> Following</span>
+          <span><b>14.2K</b> Followers</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Discord -->
+    <div class="platform-card mock-dc">
+      <div class="platform-badge"><i class="ph-fill ph-discord-logo" style="color:#5865f2;"></i></div>
+      <div class="dc-cover"></div>
+      <div class="dc-body">
+        <div class="dc-ava-holder">
+          <div class="live-avatar-wrap dc-ava"><img class="live-avatar" alt=""></div>
+          <div class="dc-status-dot"></div>
+        </div>
+        <div class="dc-card-surface">
+          <div class="dc-display">Ayaan Ahmed</div>
+          <div class="dc-username">ayaanahmed</div>
+          <div class="dc-divider"></div>
+          <div class="dc-about">Graphic Designer & Photographer</div>
+          <span class="dc-link"><i class="ph-bold ph-globe"></i> ayaanahmed.org</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instagram -->
+    <div class="platform-card mock-ig">
+      <div class="platform-badge"><i class="ph-bold ph-instagram-logo" style="color:#e1306c;"></i></div>
+      <div class="ig-top">
+        <div class="ig-ring">
+          <div class="live-avatar-wrap ig-ava"><img class="live-avatar" alt=""></div>
+        </div>
+        <div class="ig-metrics">
+          <div class="ig-metric"><b>64</b><span>posts</span></div>
+          <div class="ig-metric"><b>3,840</b><span>followers</span></div>
+          <div class="ig-metric"><b>312</b><span>following</span></div>
+        </div>
+      </div>
+      <div class="ig-bio-block">
+        <div class="ig-bio-name">Ayaan Ahmed</div>
+        <div class="ig-bio-desc">Graphic Designer & Photographer</div>
+        <span class="ig-bio-link"><i class="ph-bold ph-link"></i> ayaanahmed.org</span>
+      </div>
+      <div class="ig-actions">
+        <div class="ig-btn">Edit profile</div>
+        <div class="ig-btn">Share profile</div>
+      </div>
+    </div>
+
+    <!-- YouTube -->
+    <div class="platform-card mock-yt">
+      <div class="platform-badge"><i class="ph-fill ph-youtube-logo" style="color:#ff0033;"></i></div>
+      <div class="yt-banner"></div>
+      <div class="yt-content">
+        <div class="live-avatar-wrap yt-ava"><img class="live-avatar" alt=""></div>
+        <div class="yt-details">
+          <div class="yt-title">
+            <span>Ayaan Ahmed</span>
+            <i class="ph-fill ph-check-circle" style="font-size:15px; color:#aaa;"></i>
+          </div>
+          <div class="yt-meta">@ayaanahmed • 48.5K subscribers</div>
+          <div class="yt-desc">Graphic Designer & Photographer</div>
+          <span class="yt-link"><i class="ph-bold ph-link"></i> ayaanahmed.org</span>
+          <button class="yt-sub-btn">Subscribe</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LinkedIn -->
+    <div class="platform-card mock-li">
+      <div class="platform-badge"><i class="ph-fill ph-linkedin-logo" style="color:#0a66c2;"></i></div>
+      <div class="li-cover"></div>
+      <div class="li-body">
+        <div>
+          <div class="live-avatar-wrap li-ava"><img class="live-avatar" alt=""></div>
+          <div class="li-name">Ayaan Ahmed</div>
+          <div class="li-headline">Graphic Designer & Photographer</div>
+          <span class="li-link"><i class="ph-bold ph-arrow-square-out"></i> ayaanahmed.org</span>
+        </div>
+        <div class="li-actions">
+          <button class="li-btn-primary">Connect</button>
+          <button class="li-btn-sec">Message</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GitHub -->
+    <div class="platform-card mock-gh">
+      <div class="platform-badge"><i class="ph-fill ph-github-logo"></i></div>
+      <div class="gh-top">
+        <div class="live-avatar-wrap gh-ava"><img class="live-avatar" alt=""></div>
+        <div class="gh-names">
+          <span class="gh-fullname">Ayaan Ahmed</span>
+          <span class="gh-login">ayaanahmed</span>
+        </div>
+      </div>
+      <div class="gh-bio">Graphic Designer & Photographer</div>
+      <span class="gh-link"><i class="ph-bold ph-link"></i> ayaanahmed.org</span>
+      <div class="gh-edit-btn">Follow</div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+<canvas id="resultCanvas" style="display:none;"></canvas>
+
+<script>
+(function(){
+  const UNIT = 1000;
+  const OUTER_MARGIN = 6;
+  const OVERLAP = 3;
+
+  let img = null;
+  let naturalW = 0, naturalH = 0;
+  let baseScale = 0, userScale = 1;
+  let dispW = 0, dispH = 0;
+  let offX = 0, offY = 0;
+  let rotation = 0;
+  let flipX = 1, flipY = 1;
+
+  let borderEnabled = true;
+  let borderStyle = 'solid';
+  let borderWidthRef = 24;
+  let borderGapRef = 8;
+  let borderColor = '#ffffff';
+  let bgMode = 'transparent';
+  let bgColor = '#1c1c1e';
+  let outputSize = 1024;
+  let shape = 'circle';
+
+  let filterBright = 100, filterCont = 100, filterSat = 100;
+
+  const stageFrame = document.getElementById('stageFrame');
+  const stage = document.getElementById('stage');
+  const stageBgLayer = document.getElementById('stageBgLayer');
+  const dragImg = document.getElementById('dragImg');
+  const placeholder = document.getElementById('placeholder');
+  const cropMask = document.getElementById('cropMask');
+  const ringPreview = document.getElementById('ringPreview');
+  const gridOverlay = document.getElementById('gridOverlay');
+  const fileInput = document.getElementById('fileInput');
+  const zoomSlider = document.getElementById('zoomSlider');
+  const zoomVal = document.getElementById('zoomVal');
+  const rotSlider = document.getElementById('rotSlider');
+  const rotVal = document.getElementById('rotVal');
+  const resultCanvas = document.getElementById('resultCanvas');
+  const toast = document.getElementById('toast');
+  const liveAvatars = document.querySelectorAll('.live-avatar');
+  const liveAvatarWraps = document.querySelectorAll('.live-avatar-wrap');
+
+  let gridTimer = null;
+  function showGridTemporarily(){
+    if(!img) return;
+    gridOverlay.classList.add('active');
+    clearTimeout(gridTimer);
+    gridTimer = setTimeout(()=>{
+      gridOverlay.classList.remove('active');
+    }, 650);
+  }
+
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=>toast.classList.remove('show'), 2600);
+  }
+
+  function syncSquare(){
+    const w = stageFrame.getBoundingClientRect().width;
+    if(w > 0) stageFrame.style.height = w + 'px';
+  }
+  new ResizeObserver(syncSquare).observe(stageFrame);
+  syncSquare();
+
+  let cachedRect = null;
+  function currentRect(){
+    return cachedRect || stage.getBoundingClientRect();
+  }
+
+  function loadDataURL(dataUrl){
+    const image = new Image();
+    image.onload = ()=>{
+      img = image;
+      naturalW = image.naturalWidth;
+      naturalH = image.naturalHeight;
+      dragImg.src = dataUrl;
+      placeholder.style.display = 'none';
+      userScale = 1;
+      rotation = 0;
+      flipX = 1;
+      flipY = 1;
+      zoomSlider.value = 100;
+      zoomVal.textContent = '100%';
+      rotSlider.value = 0;
+      rotVal.textContent = '0°';
+      resetFit();
+      layoutImage();
+      updateOverlays();
+      renderResult();
+    };
+    image.src = dataUrl;
+  }
+
+  function loadFile(file){
+    if(!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = e => loadDataURL(e.target.result);
+    reader.readAsDataURL(file);
+  }
+
+  function resetFit(){
+    baseScale = Math.max(UNIT / naturalW, UNIT / naturalH);
+    dispW = naturalW * baseScale * userScale;
+    dispH = naturalH * baseScale * userScale;
+    offX = (UNIT - dispW) / 2;
+    offY = (UNIT - dispH) / 2;
+  }
+
+  function layoutImage(){
+    if(!img) return;
+    dragImg.style.width = (dispW / 10) + '%';
+    dragImg.style.height = (dispH / 10) + '%';
+    const rect = currentRect();
+    const px = offX / UNIT * rect.width;
+    const py = offY / UNIT * rect.height;
+    dragImg.style.transformOrigin = '50% 50%';
+    dragImg.style.transform = `translate3d(${px}px, ${py}px, 0) rotate(${rotation}deg) scale(${flipX}, ${flipY})`;
+    dragImg.style.filter = `brightness(${filterBright}%) contrast(${filterCont}%) saturate(${filterSat}%)`;
+  }
+
+  function clampOffsets(){
+    const minX = Math.min(0, UNIT - dispW);
+    const minY = Math.min(0, UNIT - dispH);
+    offX = Math.max(minX, Math.min(0, offX));
+    offY = Math.max(minY, Math.min(0, offY));
+  }
+
+  function applyZoom(newScale, anchorRatioX = 0.5, anchorRatioY = 0.5){
+    newScale = Math.max(1, Math.min(4, newScale));
+    const oldDispW = dispW, oldDispH = dispH;
+    userScale = newScale;
+    dispW = naturalW * baseScale * userScale;
+    dispH = naturalH * baseScale * userScale;
+    offX -= (dispW - oldDispW) * anchorRatioX;
+    offY -= (dispH - oldDispH) * anchorRatioY;
+    clampOffsets();
+    layoutImage();
+    const pct = Math.round(userScale * 100);
+    zoomSlider.value = pct;
+    zoomVal.textContent = pct + '%';
+  }
+
+  function withSnap(fn){
+    dragImg.style.transition = 'transform .32s cubic-bezier(.22,1,.36,1)';
+    fn();
+    setTimeout(()=>{ dragImg.style.transition = 'none'; }, 340);
+  }
+
+  function geometry(size){
+    const scaleF = size / UNIT;
+    const margin = borderEnabled ? OUTER_MARGIN * scaleF : 0;
+    const strokeW = borderEnabled ? borderWidthRef * scaleF : 0;
+    const gapW = borderGapRef * scaleF;
+    const outerR = size / 2 - margin - strokeW / 2;
+    const contentR = Math.max(0, outerR - strokeW / 2 - gapW);
+    return {strokeW, outerR, contentR};
+  }
+
+  function updateOverlays(){
+    const {strokeW, outerR, contentR} = geometry(UNIT);
+    const cd = (contentR * 2 / UNIT * 100);
+    cropMask.style.width = cd + '%';
+    cropMask.style.height = cd + '%';
+    gridOverlay.style.width = cd + '%';
+    gridOverlay.style.height = cd + '%';
+
+    const radiusCSS = shape === 'circle' ? '50%' : '24%';
+    cropMask.style.borderRadius = radiusCSS;
+    ringPreview.style.borderRadius = radiusCSS;
+    gridOverlay.style.borderRadius = radiusCSS;
+
+    liveAvatarWraps.forEach(w => {
+      w.style.borderRadius = radiusCSS;
+    });
+
+    if(bgMode === 'solid'){
+      stageBgLayer.style.opacity = '1';
+      stageBgLayer.style.background = bgColor;
+    } else {
+      stageBgLayer.style.opacity = '0';
+    }
+
+    if(borderEnabled && strokeW > 0){
+      ringPreview.style.display = 'block';
+      const rectW = currentRect().width || stage.getBoundingClientRect().width || 400;
+      const strokePx = Math.max(1, (strokeW / UNIT) * rectW);
+      const od = (outerR * 2 / UNIT * 100);
+      ringPreview.style.width = od + '%';
+      ringPreview.style.height = od + '%';
+      ringPreview.style.borderStyle = borderStyle === 'double' ? 'double' : borderStyle;
+      ringPreview.style.borderColor = borderColor;
+      ringPreview.style.borderWidth = (borderStyle === 'double' ? strokePx * 1.35 : strokePx) + 'px';
+    } else {
+      ringPreview.style.display = 'none';
+    }
+  }
+
+  function drawMaskPath(ctx, cx, cy, r){
+    if(shape === 'circle' || !ctx.roundRect){
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    } else {
+      ctx.roundRect(cx - r, cy - r, r * 2, r * 2, r * 0.48);
+    }
+  }
+
+  function renderToCanvas(canvas, size){
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, size, size);
+
+    if(bgMode === 'solid'){
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, size, size);
+    }
+
+    const {strokeW, outerR, contentR} = geometry(size);
+    const cx = size / 2, cy = size / 2;
+    const scaleF = size / UNIT;
+    const overlapPx = borderEnabled ? OVERLAP * scaleF : 0;
+
+    if(img){
+      ctx.save();
+      ctx.beginPath();
+      drawMaskPath(ctx, cx, cy, Math.max(0, contentR + overlapPx));
+      ctx.clip();
+
+      ctx.filter = `brightness(${filterBright}%) contrast(${filterCont}%) saturate(${filterSat}%)`;
+
+      const drawX = offX * scaleF;
+      const drawY = offY * scaleF;
+      const drawW = dispW * scaleF;
+      const drawH = dispH * scaleF;
+
+      ctx.translate(drawX + drawW / 2, drawY + drawH / 2);
+      ctx.rotate(rotation * Math.PI / 180);
+      ctx.scale(flipX, flipY);
+      ctx.translate(-(drawX + drawW / 2), -(drawY + drawH / 2));
+
+      ctx.drawImage(img, drawX, drawY, drawW, drawH);
+      ctx.restore();
+    }
+
+    if(borderEnabled && strokeW > 0){
+      ctx.save();
+      ctx.strokeStyle = borderColor;
+      ctx.lineCap = 'butt';
+      const ringR = outerR;
+
+      if(borderStyle === 'dashed'){
+        ctx.setLineDash([strokeW * 1.6, strokeW * 1.15]);
+        ctx.lineWidth = strokeW;
+        ctx.beginPath();
+        drawMaskPath(ctx, cx, cy, ringR);
+        ctx.closePath();
+        ctx.stroke();
+      } else if(borderStyle === 'dotted'){
+        ctx.setLineDash([strokeW * 0.18, strokeW * 1.05]);
+        ctx.lineCap = 'round';
+        ctx.lineWidth = strokeW;
+        ctx.beginPath();
+        drawMaskPath(ctx, cx, cy, ringR);
+        ctx.closePath();
+        ctx.stroke();
+      } else if(borderStyle === 'double'){
+        ctx.setLineDash([]);
+        ctx.lineWidth = strokeW * 0.32;
+        const gapD = strokeW * 0.42;
+        ctx.beginPath();
+        drawMaskPath(ctx, cx, cy, ringR + gapD);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.beginPath();
+        drawMaskPath(ctx, cx, cy, Math.max(0, ringR - gapD));
+        ctx.closePath();
+        ctx.stroke();
+      } else {
+        ctx.setLineDash([]);
+        ctx.lineWidth = strokeW;
+        ctx.beginPath();
+        drawMaskPath(ctx, cx, cy, ringR);
+        ctx.closePath();
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+
+  function renderResult(){
+    renderToCanvas(resultCanvas, 280);
+    const url = resultCanvas.toDataURL('image/png');
+    liveAvatars.forEach(el => { el.src = url; });
+  }
+
+  let dragging = false;
+  let dragStartX = 0, dragStartY = 0, startOffX = 0, startOffY = 0;
+  const activePointers = new Map();
+  let pinchStartDist = 0, pinchStartScale = 1;
+  let pinchPrevMidX = 0, pinchPrevMidY = 0;
+  let moveScheduled = false;
+  let dragCurX = 0, dragCurY = 0;
+
+  stage.addEventListener('pointerdown', e => {
+    if(!img || e.target.closest('#placeholder')) return;
+    dragImg.style.transition = 'none';
+    stage.setPointerCapture(e.pointerId);
+    cachedRect = stage.getBoundingClientRect();
+    activePointers.set(e.pointerId, {x: e.clientX, y: e.clientY});
+    showGridTemporarily();
+
+    if(activePointers.size === 1){
+      dragging = true;
+      stage.classList.add('dragging');
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      startOffX = offX;
+      startOffY = offY;
+    } else if(activePointers.size === 2){
+      dragging = false;
+      const pts = [...activePointers.values()];
+      pinchStartDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      pinchStartScale = userScale;
+      pinchPrevMidX = (pts[0].x + pts[1].x) / 2;
+      pinchPrevMidY = (pts[0].y + pts[1].y) / 2;
+    }
+  });
+
+  function processMove(){
+    moveScheduled = false;
+    const rect = currentRect();
+
+    if(activePointers.size === 2){
+      const pts = [...activePointers.values()];
+      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      const midX = (pts[0].x + pts[1].x) / 2, midY = (pts[0].y + pts[1].y) / 2;
+
+      const dxUnit = (midX - pinchPrevMidX) / rect.width * UNIT;
+      const dyUnit = (midY - pinchPrevMidY) / rect.height * UNIT;
+      offX += dxUnit;
+      offY += dyUnit;
+
+      const ax = (midX - rect.left) / rect.width, ay = (midY - rect.top) / rect.height;
+      if(pinchStartDist > 0){
+        applyZoom(pinchStartScale * (dist / pinchStartDist), ax, ay);
+      } else {
+        clampOffsets();
+        layoutImage();
+      }
+      pinchPrevMidX = midX;
+      pinchPrevMidY = midY;
+      showGridTemporarily();
+      return;
+    }
+
+    if(dragging){
+      const dxUnit = (dragCurX - dragStartX) / rect.width * UNIT;
+      const dyUnit = (dragCurY - dragStartY) / rect.height * UNIT;
+      offX = startOffX + dxUnit;
+      offY = startOffY + dyUnit;
+      clampOffsets();
+      layoutImage();
+      showGridTemporarily();
+    }
+  }
+
+  stage.addEventListener('pointermove', e => {
+    if(!img || !activePointers.has(e.pointerId)) return;
+    activePointers.set(e.pointerId, {x: e.clientX, y: e.clientY});
+    dragCurX = e.clientX;
+    dragCurY = e.clientY;
+    if(!moveScheduled){
+      moveScheduled = true;
+      requestAnimationFrame(processMove);
+    }
+  });
+
+  function endPointer(e){
+    activePointers.delete(e.pointerId);
+    if(activePointers.size === 0){
+      if(dragging) renderResult();
+      dragging = false;
+      stage.classList.remove('dragging');
+      cachedRect = null;
+    } else if(activePointers.size === 1){
+      const [pt] = [...activePointers.values()];
+      dragging = true;
+      dragStartX = pt.x;
+      dragStartY = pt.y;
+      startOffX = offX;
+      startOffY = offY;
+      renderResult();
+    }
+  }
+
+  stage.addEventListener('pointerup', endPointer);
+  stage.addEventListener('pointercancel', endPointer);
+
+  stage.addEventListener('wheel', e => {
+    if(!img) return;
+    e.preventDefault();
+    const rect = stage.getBoundingClientRect();
+    const ax = (e.clientX - rect.left) / rect.width;
+    const ay = (e.clientY - rect.top) / rect.height;
+    applyZoom(userScale - e.deltaY * 0.004, ax, ay);
+    showGridTemporarily();
+    renderResult();
+  }, {passive: false});
+
+  placeholder.addEventListener('click', () => fileInput.click());
+  document.getElementById('replaceBtn').addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', e => {
+    if(e.target.files[0]) loadFile(e.target.files[0]);
+  });
+
+  stage.addEventListener('dragover', e => e.preventDefault());
+  stage.addEventListener('drop', e => {
+    e.preventDefault();
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if(file) loadFile(file);
+  });
+
+  document.getElementById('centerBtn').addEventListener('click', () => {
+    if(!img) return;
+    withSnap(() => {
+      userScale = 1;
+      rotation = 0;
+      rotSlider.value = 0;
+      rotVal.textContent = '0°';
+      resetFit();
+      layoutImage();
+    });
+    zoomSlider.value = 100;
+    zoomVal.textContent = '100%';
+    renderResult();
+  });
+
+  document.getElementById('flipHBtn').addEventListener('click', () => {
+    if(!img) return;
+    flipX *= -1;
+    layoutImage();
+    renderResult();
+  });
+
+  document.getElementById('flipVBtn').addEventListener('click', () => {
+    if(!img) return;
+    flipY *= -1;
+    layoutImage();
+    renderResult();
+  });
+
+  zoomSlider.addEventListener('input', () => {
+    if(!img) return;
+    applyZoom(zoomSlider.value / 100);
+    showGridTemporarily();
+  });
+  zoomSlider.addEventListener('change', renderResult);
+
+  rotSlider.addEventListener('input', e => {
+    rotation = +e.target.value;
+    rotVal.textContent = rotation + '°';
+    if(img){
+      layoutImage();
+      showGridTemporarily();
+    }
+  });
+  rotSlider.addEventListener('change', renderResult);
+
+  document.querySelectorAll('#shapeSeg button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#shapeSeg button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      shape = btn.dataset.shape;
+      updateOverlays();
+      renderResult();
+    });
+  });
+
+  const borderSwitch = document.getElementById('borderSwitch');
+  const borderGroup = document.getElementById('borderGroup');
+  borderSwitch.addEventListener('click', () => {
+    borderEnabled = !borderEnabled;
+    borderSwitch.classList.toggle('on', borderEnabled);
+    borderGroup.classList.toggle('disabled', !borderEnabled);
+    updateOverlays();
+    renderResult();
+  });
+
+  document.querySelectorAll('#borderStyleGrid .style-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#borderStyleGrid .style-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      borderStyle = chip.dataset.style;
+      updateOverlays();
+      renderResult();
+    });
+  });
+
+  const borderWidthInput = document.getElementById('borderWidth');
+  const borderWidthVal = document.getElementById('borderWidthVal');
+  borderWidthInput.addEventListener('input', e => {
+    borderWidthRef = +e.target.value;
+    borderWidthVal.textContent = borderWidthRef;
+    updateOverlays();
+    renderResult();
+  });
+
+  const borderGapInput = document.getElementById('borderGap');
+  const borderGapVal = document.getElementById('borderGapVal');
+  borderGapInput.addEventListener('input', e => {
+    borderGapRef = +e.target.value;
+    borderGapVal.textContent = borderGapRef;
+    updateOverlays();
+    renderResult();
+  });
+
+  const borderColorInput = document.getElementById('borderColor');
+  const borderSwatch = document.getElementById('borderSwatch');
+
+  function setBorderColor(hex){
+    borderColor = hex;
+    borderColorInput.value = hex;
+    borderSwatch.style.background = hex;
+    updateOverlays();
+    renderResult();
+  }
+
+  borderColorInput.addEventListener('input', e => setBorderColor(e.target.value));
+  document.querySelectorAll('.preset-dot:not(.bg-preset)').forEach(dot => {
+    dot.addEventListener('click', () => setBorderColor(dot.dataset.color));
+  });
+
+  const bgColorRow = document.getElementById('bgColorRow');
+  document.querySelectorAll('#bgSeg button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#bgSeg button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      bgMode = btn.dataset.mode;
+      bgColorRow.style.display = bgMode === 'solid' ? 'flex' : 'none';
+      updateOverlays();
+      renderResult();
+    });
+  });
+
+  const bgColorInput = document.getElementById('bgColor');
+  const bgSwatch = document.getElementById('bgSwatch');
+
+  function setBgColor(hex){
+    bgColor = hex;
+    bgColorInput.value = hex;
+    bgSwatch.style.background = hex;
+    updateOverlays();
+    renderResult();
+  }
+
+  bgColorInput.addEventListener('input', e => setBgColor(e.target.value));
+  document.querySelectorAll('.bg-preset').forEach(dot => {
+    dot.addEventListener('click', () => setBgColor(dot.dataset.color));
+  });
+
+  function syncSizeButtons(size){
+    outputSize = size;
+    document.querySelectorAll('#sizeSeg button, #topSizeSeg button').forEach(b => {
+      b.classList.toggle('active', +b.dataset.size === size);
+    });
+  }
+
+  document.querySelectorAll('#sizeSeg button, #topSizeSeg button').forEach(btn => {
+    btn.addEventListener('click', () => syncSizeButtons(+btn.dataset.size));
+  });
+
+  function bindFilter(sliderId, valId, setter){
+    const s = document.getElementById(sliderId);
+    const v = document.getElementById(valId);
+    s.addEventListener('input', e => {
+      const val = +e.target.value;
+      v.textContent = val + '%';
+      setter(val);
+      layoutImage();
+    });
+    s.addEventListener('change', renderResult);
+  }
+
+  bindFilter('brightSlider', 'brightVal', v => filterBright = v);
+  bindFilter('contrastSlider', 'contrastVal', v => filterCont = v);
+  bindFilter('satSlider', 'satVal', v => filterSat = v);
+
+  document.getElementById('resetAllBtn').addEventListener('click', () => {
+    borderEnabled = true;
+    borderSwitch.classList.add('on');
+    borderGroup.classList.remove('disabled');
+
+    borderStyle = 'solid';
+    document.querySelectorAll('#borderStyleGrid .style-chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.style === 'solid');
+    });
+
+    borderWidthRef = 24;
+    borderWidthInput.value = 24;
+    borderWidthVal.textContent = '24';
+
+    borderGapRef = 8;
+    borderGapInput.value = 8;
+    borderGapVal.textContent = '8';
+
+    setBorderColor('#ffffff');
+
+    bgMode = 'transparent';
+    document.querySelectorAll('#bgSeg button').forEach(b => {
+      b.classList.toggle('active', b.dataset.mode === 'transparent');
+    });
+    bgColorRow.style.display = 'none';
+    setBgColor('#1c1c1e');
+
+    shape = 'circle';
+    document.querySelectorAll('#shapeSeg button').forEach(b => {
+      b.classList.toggle('active', b.dataset.shape === 'circle');
+    });
+
+    syncSizeButtons(1024);
+
+    filterBright = 100;
+    filterCont = 100;
+    filterSat = 100;
+    document.getElementById('brightSlider').value = 100;
+    document.getElementById('brightVal').textContent = '100%';
+    document.getElementById('contrastSlider').value = 100;
+    document.getElementById('contrastVal').textContent = '100%';
+    document.getElementById('satSlider').value = 100;
+    document.getElementById('satVal').textContent = '100%';
+
+    if(img){
+      userScale = 1;
+      rotation = 0;
+      flipX = 1;
+      flipY = 1;
+      zoomSlider.value = 100;
+      zoomVal.textContent = '100%';
+      rotSlider.value = 0;
+      rotVal.textContent = '0°';
+      resetFit();
+      layoutImage();
+    }
+    updateOverlays();
+    renderResult();
+    showToast('Reset to default');
+  });
+
+  window.addEventListener('resize', () => {
+    clearTimeout(window._rt);
+    window._rt = setTimeout(() => {
+      cachedRect = null;
+      updateOverlays();
+      if(img) layoutImage();
+    }, 60);
+  });
+
+  const isMobileUA = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const saveBtn = document.getElementById('saveBtn');
+  if(isMobileUA) document.getElementById('saveBtnLabel').textContent = 'Save';
+
+  function downloadBlob(blob){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pfp-${outputSize}px.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+
+  saveBtn.addEventListener('click', () => {
+    if(!img){
+      showToast('Upload an image first');
+      return;
+    }
+    const exportCanvas = document.createElement('canvas');
+    renderToCanvas(exportCanvas, outputSize);
+    exportCanvas.toBlob(async blob => {
+      if(!blob){
+        showToast('Export failed');
+        return;
+      }
+      const file = new File([blob], `pfp-${outputSize}px.png`, {type: 'image/png'});
+      if(isMobileUA && navigator.canShare && navigator.canShare({files: [file]})){
+        try {
+          await navigator.share({files: [file], title: 'Profile Picture'});
+        } catch(err){
+          if(err && err.name !== 'AbortError'){
+            downloadBlob(blob);
+            showToast('Saved');
+          }
+        }
+      } else {
+        downloadBlob(blob);
+        showToast('Exported');
+      }
+    }, 'image/png', 1);
+  });
+
+  updateOverlays();
+  renderResult();
+})();
+</script>
+</body>
+</html>
