@@ -10,6 +10,30 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Geist:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
 <style>
+  @font-face {
+    font-family: 'ABC Ginto Normal';
+    src: url('./fonts/ABCGintoNormal-Regular.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'ABC Ginto Normal';
+    src: url('./fonts/ABCGintoNormal-Medium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'ABC Ginto Normal';
+    src: url('./fonts/ABCGintoNormal-Bold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
   :root {
     --bg: #09090d;
     --bg-elevated: #101016;
@@ -21,8 +45,8 @@
     --text: #fafafa;
     --text-2: #a1a1b5;
     --text-3: #646478;
-    --accent: #6366f1;
-    --accent-soft: rgba(99, 102, 241, 0.16);
+    --accent: #B026FF;
+    --accent-soft: rgba(176, 38, 255, 0.16);
     --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
     --radius-xl: 18px;
     --radius-lg: 12px;
@@ -135,7 +159,7 @@
     display: flex;
     align-items: center;
     gap: 7px;
-    box-shadow: 0 4px 16px -4px rgba(99, 102, 241, 0.55);
+    box-shadow: 0 4px 16px -4px rgba(176, 38, 255, 0.55);
     transition: transform 0.12s ease, filter 0.12s ease;
   }
 
@@ -167,7 +191,7 @@
   .viewport-well {
     position: relative;
     background-color: var(--bg-elevated);
-    background-image: radial-gradient(rgba(99, 102, 241, 0.12) 1px, transparent 1px);
+    background-image: radial-gradient(rgba(176, 38, 255, 0.12) 1px, transparent 1px);
     background-size: 20px 20px;
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
@@ -364,7 +388,7 @@
     height: 48px;
     border-radius: 14px;
     background: var(--accent-soft);
-    border: 1px solid rgba(99, 102, 241, 0.35);
+    border: 1px solid rgba(176, 38, 255, 0.35);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -908,7 +932,8 @@
   .mock-dc {
     background: #111214;
     color: #f2f3f5;
-    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'ABC Ginto Normal', 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 400;
   }
 
   .dc-cover {
@@ -966,6 +991,7 @@
 
   .dc-username {
     font-size: 12.5px;
+    font-weight: 500;
     color: #949ba4;
   }
 
@@ -977,12 +1003,14 @@
 
   .dc-about {
     font-size: 12.5px;
+    font-weight: 400;
     color: #dbdee1;
     line-height: 1.35;
   }
 
   .dc-link {
     color: #00a8fc;
+    font-weight: 500;
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -1499,7 +1527,7 @@
               <span class="prop-label"><i class="ph-bold ph-palette"></i> Color</span>
               <div class="color-bar">
                 <button class="preset-dot" data-color="#ffffff" style="background:#ffffff;"></button>
-                <button class="preset-dot" data-color="#6366f1" style="background:#6366f1;"></button>
+                <button class="preset-dot" data-color="#B026FF" style="background:#B026FF;"></button>
                 <button class="preset-dot" data-color="#3b82f6" style="background:#3b82f6;"></button>
                 <button class="preset-dot" data-color="#f59e0b" style="background:#f59e0b;"></button>
                 <div class="color-Trigger">
@@ -1527,7 +1555,7 @@
             <div class="color-bar">
               <button class="preset-dot bg-preset" data-color="#09090d" style="background:#09090d;"></button>
               <button class="preset-dot bg-preset" data-color="#1c1c1e" style="background:#1c1c1e;"></button>
-              <button class="preset-dot bg-preset" data-color="#6366f1" style="background:#6366f1;"></button>
+              <button class="preset-dot bg-preset" data-color="#B026FF" style="background:#B026FF;"></button>
               <button class="preset-dot bg-preset" data-color="#ffffff" style="background:#ffffff;"></button>
               <div class="color-Trigger">
                 <div class="swatch-circle" id="bgSwatch" style="background:#1c1c1e;"></div>
